@@ -2,6 +2,13 @@ export interface Env {
   PAGES_BUCKET: R2Bucket;
   META: KVNamespace;
   SITE_URL: string;
+  FEISHU_APP_ID: string;
+  FEISHU_APP_SECRET: string;
+  FEISHU_APP_TOKEN: string;
+  FEISHU_TABLE_WAITLIST: string;
+  FEISHU_TABLE_AGENTS: string;
+  FEISHU_TABLE_PAGES: string;
+  FEISHU_TABLE_DAILY_COST: string;
 }
 
 export interface AgentRecord {
