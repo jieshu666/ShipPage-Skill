@@ -1,0 +1,25 @@
+name = "shippage-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+SITE_URL = "https://shippage.ai"
+
+[[r2_buckets]]
+binding = "PAGES_BUCKET"
+bucket_name = "shippage-pages"
+
+[[kv_namespaces]]
+binding = "META"
+id = "dc7aaef6e68e4a5691b064351eb250a3"
+
+[[routes]]
+pattern = "shippage.ai/*"
+zone_name = "shippage.ai"
+
+[[routes]]
+pattern = "shippage.ai"
+zone_name = "shippage.ai"
+
+[triggers]
+crons = ["0 3 * * *"]
