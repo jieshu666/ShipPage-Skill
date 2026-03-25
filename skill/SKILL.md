@@ -1,12 +1,12 @@
 ---
 name: shippage
 description: >
-  Publish HTML to a public URL instantly. Zero config, auto-registers on first use.
-  Use when the user wants to share, preview, host, or deploy generated HTML, JSX,
+  Publish HTML or Markdown to a public URL instantly. Zero config, auto-registers on first use.
+  Use when the user wants to share, preview, host, or deploy generated HTML, Markdown, JSX,
   or web content as a live webpage accessible from any device including mobile phones
   and WeChat. Perfect for sharing AI-generated pages, reports, dashboards, landing pages,
-  prototypes, and product listings. One API call in, one public URL out.
-version: 1.0.0
+  prototypes, documentation, and product listings. One API call in, one public URL out.
+version: 1.1.0
 homepage: https://shippage.ai
 tags:
   - publish
@@ -22,6 +22,7 @@ tags:
   - prototype
   - report
   - mobile
+  - markdown
 metadata:
   openclaw:
     requires:
@@ -31,20 +32,22 @@ metadata:
 
 # ShipPage — Instant Web Publishing for AI Agents
 
-Publish any HTML content to a public URL in one API call. No setup, no registration,
+Publish any HTML or Markdown content to a public URL in one API call. No setup, no registration,
 no API key configuration needed. Your agent auto-registers on first use.
 
 Use this when you need to:
 - Share a generated webpage, report, or dashboard with someone
+- Publish Markdown documentation, notes, or articles as a styled webpage
 - Preview HTML on your phone or another device
 - Send a link to a client, teammate, or WeChat group
 - Deploy a landing page or product listing instantly
-- Make any AI-generated HTML accessible from anywhere
+- Make any AI-generated HTML or Markdown accessible from anywhere
 
 ## When to use
 
 - User says "publish this", "share this", "make this a webpage", "I want to see this on my phone"
 - User has generated HTML/JSX/web content and needs a shareable link
+- User has Markdown content (docs, notes, articles, README) and wants to publish it as a webpage
 - User wants to preview a page on another device
 - User wants to send a link to someone else
 
@@ -85,6 +88,66 @@ print(f\"Claim your agent at: {reg.get('claim_url', 'N/A')}\")
 " 2>/dev/null || true
 fi
 ```
+
+### Publish Markdown
+
+To publish Markdown content as a beautifully styled webpage with GitHub-flavored formatting:
+
+```bash
+# Read the Markdown file
+MD_CONTENT=$(cat your-file.md)
+
+# Convert to JSON-safe string and publish
+RESPONSE=$(curl -s -X POST https://shippage.ai/v1/publish \
+  ${API_KEY:+-H "Authorization: Bearer $API_KEY"} \
+  -H "Content-Type: application/json" \
+  -d "$(python3 -c "
+import json, sys, subprocess, re
+
+md = open('your-file.md').read()
+
+# Extract title from first h1
+title_match = re.match(r'^#\s+(.+)$', md, re.MULTILINE)
+title = title_match.group(1) if title_match else 'Untitled'
+
+# Convert Markdown to HTML (requires python-markdown or use marked via npx)
+try:
+    import markdown
+    html_body = markdown.markdown(md, extensions=['tables', 'fenced_code'])
+except ImportError:
+    # Fallback: use the content as-is wrapped in pre
+    html_body = '<pre>' + md.replace('<','&lt;') + '</pre>'
+
+html = f'''<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+<meta charset=\"utf-8\">
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+<title>{title}</title>
+<style>
+body {{ margin:0; padding:32px 24px; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:16px; line-height:1.6; color:#24292f; }}
+.markdown-body {{ max-width:800px; margin:0 auto; }}
+pre {{ background:#f6f8fa; padding:16px; border-radius:6px; overflow-x:auto; }}
+code {{ background:#f6f8fa; padding:0.2em 0.4em; border-radius:6px; font-size:85%; }}
+pre code {{ background:transparent; padding:0; }}
+blockquote {{ border-left:0.25em solid #d1d9e0; padding:0 1em; color:#656d76; margin:0 0 16px; }}
+table {{ border-collapse:collapse; width:100%; }}
+th,td {{ padding:6px 13px; border:1px solid #d1d9e0; }}
+th {{ background:#f6f8fa; }}
+img {{ max-width:100%; }}
+h1,h2 {{ border-bottom:1px solid #d1d9e0; padding-bottom:0.3em; }}
+</style>
+</head>
+<body><article class=\"markdown-body\">{html_body}</article></body>
+</html>'''
+
+print(json.dumps({'html': html, 'title': title}))
+")")
+
+echo "$RESPONSE"
+```
+
+> **Tip**: If the MCP server (`shippage-mcp`) is available, use the `publish_markdown` tool instead — it handles conversion automatically with full GitHub-flavored Markdown support.
 
 ### Response handling
 

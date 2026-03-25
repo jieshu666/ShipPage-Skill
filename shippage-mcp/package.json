@@ -1,0 +1,30 @@
+{
+  "name": "shippage-mcp",
+  "version": "1.1.0",
+  "description": "MCP Server for ShipPage - instant HTML publishing for AI agents. Zero config.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "shippage-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "publish",
+    "html",
+    "ai-agent",
+    "shippage"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "marked": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.9.3"
+  }
+}
