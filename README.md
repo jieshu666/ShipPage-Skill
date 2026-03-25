@@ -3,7 +3,9 @@
 [![npm version](https://img.shields.io/npm/v/shippage-mcp)](https://www.npmjs.com/package/shippage-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Instant HTML publishing service for AI agents. Publish any HTML to a public URL with a single API call. No registration, no API keys to configure — auto-registers on first use.
+> Instant HTML & Markdown publishing service for AI agents. Publish any HTML or Markdown to a public URL with a single API call. No registration, no API keys to configure — auto-registers on first use.
+
+**Official Website: [shippage.ai](https://shippage.ai)**
 
 [English](#) | [中文](./README.zh-CN.md)
 

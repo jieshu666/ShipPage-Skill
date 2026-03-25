@@ -6,7 +6,7 @@ description: >
   or web content as a live webpage accessible from any device including mobile phones
   and WeChat. Perfect for sharing AI-generated pages, reports, dashboards, landing pages,
   prototypes, documentation, and product listings. One API call in, one public URL out.
-version: 1.1.0
+version: 1.1.1
 homepage: https://shippage.ai
 tags:
   - publish

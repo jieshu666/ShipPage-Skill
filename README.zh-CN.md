@@ -3,7 +3,9 @@
 [![npm version](https://img.shields.io/npm/v/shippage-mcp)](https://www.npmjs.com/package/shippage-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> 为 AI Agent 打造的即时 HTML 发布服务。一次 API 调用即可将任意 HTML 发布为公网 URL。无需注册，无需配置 —— 首次调用自动完成一切。
+> 为 AI Agent 打造的即时 HTML & Markdown 发布服务。一次 API 调用即可将任意 HTML 或 Markdown 发布为公网 URL。无需注册，无需配置 —— 首次调用自动完成一切。
+
+**官网：[shippage.ai](https://shippage.ai)**
 
 [English](./README.md) | [中文](#)
 
