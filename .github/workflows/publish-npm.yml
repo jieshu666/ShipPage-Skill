@@ -15,6 +15,9 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org
 
+      - name: Copy README into package
+        run: cp README.md shippage-mcp/README.md
+
       - name: Install & Build
         working-directory: shippage-mcp
         run: npm ci && npm run build
