@@ -1,6 +1,6 @@
 {
   "name": "shippage-mcp",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "MCP Server for ShipPage - instant HTML publishing for AI agents. Zero config.",
   "type": "module",
   "main": "dist/index.js",
