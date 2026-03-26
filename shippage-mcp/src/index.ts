@@ -56,7 +56,7 @@ async function apiCall(method: string, path: string, body?: any) {
 
 // 创建 MCP Server
 const server = new Server(
-  { name: 'shippage-mcp', version: '1.0.0' },
+  { name: 'shippage-mcp', version: '1.2.0' },
   { capabilities: { tools: {} } }
 );
 

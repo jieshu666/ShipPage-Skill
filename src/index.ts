@@ -4,6 +4,7 @@ import publish from './routes/publish';
 import pages from './routes/pages';
 import serve from './routes/serve';
 import waitlist from './routes/waitlist';
+import skill from './routes/skill';
 import { handleCron } from './cron/cleanup';
 import { generateLandingPage } from './landing/page';
 import type { AppBindings } from './types';
@@ -22,6 +23,7 @@ app.route('/', publish);
 app.route('/', pages);
 app.route('/', serve);
 app.route('/', waitlist);
+app.route('/', skill);
 
 // 落地页
 app.get('/', (c) => {

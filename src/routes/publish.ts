@@ -117,10 +117,20 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
 
   if (registration) {
     response._registration = registration;
-    return c.json(response, 201);
   }
 
-  return c.json(response, 200);
+  // Skill 自动更新提示：对比请求中的版本号与最新版本
+  const latestVersion = await c.env.META.get('skill:latest_version');
+  const skillVersion = c.req.header('X-Skill-Version');
+  if (latestVersion && skillVersion !== latestVersion) {
+    response._skill_update = {
+      latest_version: latestVersion,
+      message: `ShipPage skill v${latestVersion} is available. Update: curl -s https://shippage.ai/v1/skill/download -o ~/.claude/skills/shippage/SKILL.md`,
+      download_url: `${c.env.SITE_URL}/v1/skill/download`,
+    };
+  }
+
+  return c.json(response, registration ? 201 : 200);
 });
 
 // 简单的密码 hash（用 Web Crypto API）

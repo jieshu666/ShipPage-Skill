@@ -1,9 +1,9 @@
-# ShipPage — HTML in. URL out. Zero config.
+# ShipPage — HTML or Markdown in. URL out. Zero config.
 
 [![npm version](https://img.shields.io/npm/v/shippage-mcp)](https://www.npmjs.com/package/shippage-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Instant HTML & Markdown publishing service for AI agents. Publish any HTML or Markdown to a public URL with a single API call. No registration, no API keys to configure — auto-registers on first use.
+> Turn any HTML **or Markdown** into a live webpage with a single API call. No registration, no API keys to configure — auto-registers on first use.
 
 **Official Website: [shippage.ai](https://shippage.ai)**
 
@@ -13,9 +13,11 @@
 
 ## What is ShipPage?
 
-ShipPage is a zero-config HTML publishing service designed for AI agents. It turns any HTML content into a publicly accessible URL with a single API call. When an AI agent calls the publish endpoint for the first time, ShipPage automatically registers the agent, issues an API key, and returns a live URL — all in one request. No human setup required.
+ShipPage is a zero-config web publishing service designed for AI agents. Hand it any HTML or Markdown and get back a public URL — one API call, done. Markdown content is automatically converted to a beautifully styled, mobile-friendly webpage with GitHub-flavored formatting.
 
-ShipPage is built on Cloudflare Workers, R2, and KV for edge-deployed, globally fast performance (<100ms response time). It supports password-protected pages, custom URL slugs, full CRUD management, and integrates with the OpenClaw and MCP ecosystems.
+When an AI agent calls the publish endpoint for the first time, ShipPage automatically registers the agent, issues an API key, and returns a live URL — all in one request. No human setup required.
+
+ShipPage is built on Cloudflare Workers, R2, and KV for edge-deployed, globally fast performance (<100ms response time). It supports password-protected pages, custom URL slugs, full CRUD management, skill auto-update, and integrates with the OpenClaw and MCP ecosystems.
 
 ## Quick Start
 
@@ -25,7 +27,7 @@ ShipPage is built on Cloudflare Workers, R2, and KV for edge-deployed, globally 
 clawhub install shippage
 ```
 
-Then tell your AI: *"Publish this as a webpage"* — done.
+Then tell your AI: *"Publish this HTML as a webpage"* or *"Turn this Markdown into a shareable link"* — done.
 
 ### Option 2: MCP Server (Claude Desktop / Cursor)
 
@@ -42,9 +44,11 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-No API key needed. No environment variables.
+No API key needed. No environment variables. Supports both `publish_html` and `publish_markdown` tools.
 
 ### Option 3: Direct API
+
+**Publish HTML:**
 
 ```bash
 curl -X POST https://shippage.ai/v1/publish \
@@ -52,6 +56,17 @@ curl -X POST https://shippage.ai/v1/publish \
   -d '{
     "html": "<html><body><h1>Hello World!</h1></body></html>",
     "title": "My Page"
+  }'
+```
+
+**Publish Markdown** (converted to a styled webpage automatically):
+
+```bash
+curl -X POST https://shippage.ai/v1/publish \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<html>...your rendered markdown...</html>",
+    "title": "My Doc"
   }'
 ```
 
@@ -81,6 +96,8 @@ Save the `api_key` for subsequent requests. The `claim_url` lets the user manage
 | `PUT` | `/v1/pages/:slug` | Update a page | Required |
 | `DELETE` | `/v1/pages/:slug` | Delete a page | Required |
 | `GET` | `/p/:slug` | View a published page | None |
+| `GET` | `/v1/skill/version` | Check for skill updates | None |
+| `GET` | `/v1/skill/download` | Download latest SKILL.md | None |
 
 ### POST /v1/publish Parameters
 
@@ -97,17 +114,20 @@ Save the `api_key` for subsequent requests. The `claim_url` lets the user manage
 | Feature | ShipPage | PageDrop | Manual Deploy |
 |---------|----------|----------|---------------|
 | Zero config | ✅ | ✅ | ❌ |
+| HTML → Webpage | ✅ | ✅ | ✅ |
+| Markdown → Styled Webpage | ✅ | ❌ | ❌ |
 | Agent identity system | ✅ | ❌ | ❌ |
 | Page management (CRUD) | ✅ | ❌ | Varies |
 | Password protection | ✅ | ❌ | Varies |
 | Custom URL slugs | ✅ | ❌ | ✅ |
 | OpenClaw + MCP ecosystem | ✅ | ❌ | ❌ |
+| Skill auto-update | ✅ | ❌ | ❌ |
 | Auto-expiry & cleanup | ✅ | ✅ | ❌ |
 
 ## How It Works
 
 ```
-Agent calls POST /v1/publish (no auth needed)
+Agent calls POST /v1/publish with HTML or rendered Markdown
     │
     ├─ First time? → Auto-register: generate agent_id + api_key + claim_code
     │                Return URL + credentials in one response
@@ -139,11 +159,17 @@ No credit card required.
 **Q: Do I need to register before using ShipPage?**
 A: No. ShipPage auto-registers your AI agent on the first API call. No signup, no forms, no email verification.
 
+**Q: Can I publish Markdown directly?**
+A: Yes. The OpenClaw skill and MCP server both support Markdown natively — your Markdown is converted to a beautifully styled, mobile-friendly webpage automatically.
+
 **Q: What happens when my pages expire?**
 A: Free-tier pages expire after 14 days and are automatically cleaned up. You can re-publish at any time. Pro tier (coming soon) offers permanent pages.
 
 **Q: Can I use ShipPage without Claude?**
 A: Yes. ShipPage works with any HTTP client. The API is a standard REST endpoint — use it from any AI agent, script, or tool.
+
+**Q: How does skill auto-update work?**
+A: The ShipPage skill checks for updates on first use each session. If a new version is available, it downloads and replaces itself automatically. Changes take effect in the next session.
 
 **Q: Is ShipPage open source?**
 A: Yes. The source code is available at [github.com/Uncle-Jacky/ShipPage-Skill](https://github.com/Uncle-Jacky/ShipPage-Skill) under the MIT license.
