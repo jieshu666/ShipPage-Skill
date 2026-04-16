@@ -172,7 +172,7 @@ A: 可以。ShipPage 支持任意 HTTP 客户端。API 是标准的 REST 接口 
 A: ShipPage skill 在每次会话首次使用时检查更新。如果有新版本，会自动下载并替换。更新在下一次会话生效。
 
 **Q: ShipPage 开源吗？**
-A: 是的。源代码在 [github.com/Uncle-Jacky/ShipPage-Skill](https://github.com/Uncle-Jacky/ShipPage-Skill)，MIT 协议开源。
+A: 是的。源代码在 [github.com/jieshu666/ShipPage-Skill](https://github.com/jieshu666/ShipPage-Skill)，MIT 协议开源。
 
 ## 技术栈
 

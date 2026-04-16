@@ -172,7 +172,7 @@ A: Yes. ShipPage works with any HTTP client. The API is a standard REST endpoint
 A: The ShipPage skill checks for updates on first use each session. If a new version is available, it downloads and replaces itself automatically. Changes take effect in the next session.
 
 **Q: Is ShipPage open source?**
-A: Yes. The source code is available at [github.com/Uncle-Jacky/ShipPage-Skill](https://github.com/Uncle-Jacky/ShipPage-Skill) under the MIT license.
+A: Yes. The source code is available at [github.com/jieshu666/ShipPage-Skill](https://github.com/jieshu666/ShipPage-Skill) under the MIT license.
 
 ## Tech Stack
 

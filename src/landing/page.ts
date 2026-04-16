@@ -230,7 +230,7 @@ export function generateLandingPage(lang: Lang = 'en'): string {
         <a href="${lang === 'zh' ? '?lang=zh' : '/'}#install">${t(lang, 'Install', '安装')}</a>
         <a href="${lang === 'zh' ? '?lang=zh' : '/'}#pricing">${t(lang, 'Pricing', '价格')}</a>
         <a href="${lang === 'zh' ? '?lang=zh' : '/'}#faq">FAQ</a>
-        <a href="https://github.com/Uncle-Jacky/ShipPage-Skill" target="_blank">GitHub</a>
+        <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank">GitHub</a>
         <a href="?lang=${otherLang}" class="lang-btn">${otherLabel}</a>
       </div>
     </div>
@@ -246,7 +246,7 @@ export function generateLandingPage(lang: Lang = 'en'): string {
         )}</p>
         <div class="hero-ctas">
           <a href="#install" class="btn btn-primary">${t(lang, 'Install Skill', '安装 Skill')}</a>
-          <a href="https://github.com/Uncle-Jacky/ShipPage-Skill" target="_blank" class="btn btn-secondary">${t(lang, 'View on GitHub', '查看源码')}</a>
+          <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank" class="btn btn-secondary">${t(lang, 'View on GitHub', '查看源码')}</a>
         </div>
         <p class="hero-trust">${t(lang, 'Free · 20 publishes/month · No credit card required', '免费 · 每月 20 次发布 · 无需信用卡')}</p>
       </div>
@@ -511,7 +511,7 @@ Content-Type: application/json
       <div class="footer-inner">
         <span class="footer-copy">© 2026 ShipPage · ${t(lang, 'Built on Cloudflare Workers', '基于 Cloudflare Workers 构建')}</span>
         <div class="footer-links">
-          <a href="https://github.com/Uncle-Jacky/ShipPage-Skill" target="_blank">GitHub</a>
+          <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank">GitHub</a>
           <a href="https://www.npmjs.com/package/shippage-mcp" target="_blank">npm</a>
           <a href="https://clawhub.ai/skills/shippage" target="_blank">ClawHub</a>
           <a href="/health">API Status</a>

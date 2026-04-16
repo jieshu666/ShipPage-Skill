@@ -9,6 +9,9 @@ export interface Env {
   FEISHU_TABLE_AGENTS: string;
   FEISHU_TABLE_PAGES: string;
   FEISHU_TABLE_DAILY_COST: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  SESSION_SECRET: string;
 }
 
 export interface AgentRecord {
@@ -20,11 +23,24 @@ export interface AgentRecord {
   created_at: string;
   usage_this_month: number;
   usage_reset_at: string;
+  owner_google_id?: string | null;
+  display_name?: string | null;
+}
+
+export interface UserRecord {
+  google_id: string;
+  email: string;
+  name: string;
+  picture: string;
+  linked_agents: string[];
+  created_at: string;
+  last_login: string;
 }
 
 export type AppBindings = {
   Bindings: Env;
   Variables: {
     agent: AgentRecord | null;
+    user: UserRecord | null;
   };
 };

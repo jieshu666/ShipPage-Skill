@@ -10,6 +10,7 @@ FEISHU_TABLE_WAITLIST = "tbldfQ7JbDWkdkRf"
 FEISHU_TABLE_AGENTS = "tblO3ZGzo3qd40gL"
 FEISHU_TABLE_PAGES = "tblXWHrxuh9zcw4o"
 FEISHU_TABLE_DAILY_COST = "tblWHqm7dfdboONR"
+GOOGLE_CLIENT_ID = "977796719274-kcprgk4vfcff34cr86ln9hhiqu6vjg9p.apps.googleusercontent.com"
 
 [[r2_buckets]]
 binding = "PAGES_BUCKET"

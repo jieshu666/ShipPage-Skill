@@ -20,6 +20,6 @@ Available as:
 - Raw API: curl -X POST https://shippage.ai/v1/publish -d '{"html": "..."}'
 
 Free tier: 20 pages/month, 14-day retention, 500KB max.
-Code: https://github.com/Uncle-Jacky/shippage
+Code: https://github.com/jieshu666/ShipPage-Skill
 
 Would love feedback on the auto-registration model — is this the right pattern for agent-first services?

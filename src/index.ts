@@ -5,6 +5,10 @@ import pages from './routes/pages';
 import serve from './routes/serve';
 import waitlist from './routes/waitlist';
 import skill from './routes/skill';
+import claim from './routes/claim';
+import auth from './routes/auth';
+import account from './routes/account';
+import { sessionMiddleware } from './middleware/session';
 import { handleCron } from './cron/cleanup';
 import { generateLandingPage } from './landing/page';
 import type { AppBindings } from './types';
@@ -18,12 +22,18 @@ app.use('*', cors({
   allowHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// Session middleware
+app.use('*', sessionMiddleware());
+
 // API 路由
+app.route('/', auth);
+app.route('/', account);
 app.route('/', publish);
 app.route('/', pages);
 app.route('/', serve);
 app.route('/', waitlist);
 app.route('/', skill);
+app.route('/', claim);
 
 // 落地页
 app.get('/', (c) => {
