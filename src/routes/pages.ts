@@ -39,7 +39,7 @@ pages.get('/v1/pages', authMiddleware(true), async (c) => {
 // 更新页面
 pages.put('/v1/pages/:slug', authMiddleware(true), async (c) => {
   const agent = c.get('agent')!;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
 
   const metaStr = await c.env.META.get(`page:${slug}`);
   if (!metaStr) return c.json({ ok: false, error: 'Page not found' }, 404);
@@ -51,9 +51,18 @@ pages.put('/v1/pages/:slug', authMiddleware(true), async (c) => {
 
   const body = await c.req.json();
 
+  if (body.public !== undefined) {
+    meta.is_public = body.public === true;
+  }
+
   if (body.html) {
     const { injectWatermark } = await import('../utils/watermark');
-    const finalHtml = injectWatermark(body.html, c.env.SITE_URL);
+    const finalHtml = injectWatermark(body.html, {
+      siteUrl: c.env.SITE_URL,
+      slug,
+      isPublic: meta.is_public === true,
+      title: body.title || meta.title,
+    });
     await c.env.PAGES_BUCKET.put(`pages/${slug}.html`, finalHtml);
   }
 
@@ -93,7 +102,7 @@ pages.put('/v1/pages/:slug', authMiddleware(true), async (c) => {
 // 删除页面
 pages.delete('/v1/pages/:slug', authMiddleware(true), async (c) => {
   const agent = c.get('agent')!;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
 
   const metaStr = await c.env.META.get(`page:${slug}`);
   if (!metaStr) return c.json({ ok: false, error: 'Page not found' }, 404);

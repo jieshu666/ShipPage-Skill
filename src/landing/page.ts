@@ -2,10 +2,13 @@ type Lang = 'en' | 'zh';
 
 const t = (lang: Lang, en: string, zh: string) => lang === 'zh' ? zh : en;
 
-export function generateLandingPage(lang: Lang = 'en'): string {
+export function generateLandingPage(lang: Lang = 'en', plausibleDomain?: string): string {
   const otherLang = lang === 'zh' ? 'en' : 'zh';
   const otherLabel = lang === 'zh' ? 'EN' : '中文';
   const htmlLang = lang === 'zh' ? 'zh-CN' : 'en';
+  const plausibleScript = plausibleDomain
+    ? `<script defer data-domain="${plausibleDomain}" src="https://plausible.io/js/script.outbound-links.js"></script>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="${htmlLang}">
@@ -13,22 +16,31 @@ export function generateLandingPage(lang: Lang = 'en'): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShipPage — Instant HTML Publishing for AI Agents | Zero Config</title>
+  ${plausibleScript}
   <meta name="description" content="Publish HTML to a public URL in seconds. Zero config, zero registration. Install the OpenClaw Skill or MCP Server and your AI agent can publish web pages instantly. Free tier: 20 publishes/month.">
   <meta name="keywords" content="HTML publishing, AI agent, MCP server, OpenClaw, Claude, Cursor, web publishing, zero config, instant deploy">
   <meta name="robots" content="index,follow">
-  <link rel="canonical" href="https://shippage.ai">
+  <link rel="canonical" href="https://shippage.ai${lang === 'zh' ? '/?lang=zh' : '/'}">
+  <link rel="alternate" hreflang="en" href="https://shippage.ai/">
+  <link rel="alternate" hreflang="zh-CN" href="https://shippage.ai/?lang=zh">
+  <link rel="alternate" hreflang="x-default" href="https://shippage.ai/">
 
   <!-- Open Graph -->
   <meta property="og:title" content="ShipPage — HTML in. URL out. Zero config.">
   <meta property="og:description" content="Instant HTML publishing for AI agents. No registration. No config. Install and go. Free tier: 20 publishes/month.">
-  <meta property="og:url" content="https://shippage.ai">
+  <meta property="og:url" content="https://shippage.ai${lang === 'zh' ? '/?lang=zh' : '/'}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ShipPage">
+  <meta property="og:image" content="https://shippage.ai/og.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="${lang === 'zh' ? 'zh_CN' : 'en_US'}">
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ShipPage — HTML in. URL out. Zero config.">
   <meta name="twitter:description" content="Instant HTML publishing for AI agents. No registration. No config. Install and go.">
+  <meta name="twitter:image" content="https://shippage.ai/og.svg">
 
   <!-- JSON-LD: SoftwareApplication -->
   <script type="application/ld+json">
@@ -112,6 +124,104 @@ export function generateLandingPage(lang: Lang = 'en'): string {
           "@type": "Answer",
           "text": "Free-tier pages expire after 14 days and are automatically cleaned up by a daily cron job. You can publish again to create a new version, or upgrade to Pro (coming soon) for permanent pages."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I publish HTML from Claude Code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Install the ShipPage skill with 'clawhub install shippage'. Then in any Claude Code session, ask Claude to 'publish this HTML as a webpage' and it will call the ShipPage API and return a public URL. No API keys or environment variables are required — the skill auto-registers on first use."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I share a webpage that Claude, Cursor, or ChatGPT generated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Install ShipPage as an MCP server ('npx shippage-mcp') in Claude Desktop or Cursor, or use the OpenClaw skill in Claude Code. Your AI agent can then call the publish tool to turn any HTML or Markdown content into a shareable URL at shippage.ai/p/{slug} in under a second."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an MCP server for publishing web pages?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An MCP (Model Context Protocol) server is a tool provider that AI assistants like Claude Desktop and Cursor can invoke. The ShipPage MCP server ('npx shippage-mcp') exposes publish_html, publish_markdown, list_pages, and delete_page tools, letting the AI publish and manage web pages directly from the conversation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is ShipPage a zero-config alternative to Vercel or Netlify?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For AI-generated HTML, yes. Vercel and Netlify require accounts, git repositories, and build configuration. ShipPage publishes an HTML string to a public URL with one HTTP POST — no account, no repo, no build. It is purpose-built for AI agents that need instant, ephemeral web delivery rather than a full CI/CD pipeline."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I publish Markdown directly to a webpage?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Both the OpenClaw skill and the MCP server accept Markdown and convert it to a styled, mobile-friendly HTML page with GitHub-flavored formatting before publishing. The published page renders headings, lists, code blocks, tables, and links automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I make my published page appear in Google search results?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pass 'public': true in the publish request body. Public pages receive index,follow robots directives, a canonical link, and are included in shippage.ai/sitemap.xml. Default pages are noindex to prevent spam; opt in per page when you want discoverability."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does ShipPage work with any HTTP client?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The /v1/publish endpoint is a standard REST endpoint. Any HTTP client — curl, Python requests, Node fetch, Go net/http — can publish by POSTing JSON with an 'html' field. The skill and MCP server are convenience wrappers; the raw API is always available."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is ShipPage open source?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. ShipPage is MIT-licensed and hosted on GitHub at github.com/jieshu666/ShipPage-Skill. The Cloudflare Workers backend, the OpenClaw skill, and the MCP server implementation are all open source."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD: HowTo -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to publish HTML from an AI agent in 30 seconds",
+    "description": "Turn HTML generated by Claude, Cursor, or any AI agent into a public URL using ShipPage.",
+    "totalTime": "PT30S",
+    "tool": [
+      { "@type": "HowToTool", "name": "Claude Code, Claude Desktop, Cursor, or any HTTP client" }
+    ],
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Install ShipPage",
+        "text": "Run 'clawhub install shippage' for Claude Code, or add 'npx shippage-mcp' to your Claude Desktop or Cursor MCP config. No API keys required."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Ask your AI to publish",
+        "text": "Tell your AI agent: 'publish this as a webpage'. The agent generates HTML (or Markdown) and calls the ShipPage publish tool automatically."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Share the URL",
+        "text": "ShipPage returns a public URL at shippage.ai/p/{slug}. On first use, the agent also receives an api_key and claim_url for future page management."
       }
     ]
   }
@@ -210,6 +320,14 @@ export function generateLandingPage(lang: Lang = 'en'): string {
     .footer-links a { color: var(--text-dim); }
     .footer-links a:hover { color: var(--text); }
     .footer-copy { font-size: 12px; color: var(--text-dim); }
+    .facts { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 28px 32px; }
+    .facts ul { list-style: none; display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .facts li { color: var(--text-muted); font-size: 15px; line-height: 1.6; padding-left: 24px; position: relative; }
+    .facts li::before { content: '▸'; color: var(--accent); position: absolute; left: 0; top: 0; font-size: 14px; }
+    .facts li strong { color: var(--text); font-weight: 600; }
+    @media (min-width: 768px) {
+      .facts ul { grid-template-columns: 1fr 1fr; }
+    }
     @media (min-width: 768px) {
       .steps-grid { grid-template-columns: repeat(3, 1fr); }
       .demo-grid { grid-template-columns: 1fr 1fr; }
@@ -227,9 +345,10 @@ export function generateLandingPage(lang: Lang = 'en'): string {
     <div class="wrap">
       <a href="/" class="nav-logo">Ship<span>Page</span></a>
       <div class="nav-links">
+        <a href="/blog">${t(lang, 'Blog', '博客')}</a>
+        <a href="/templates">${t(lang, 'Templates', '模板')}</a>
+        <a href="/showcase">${t(lang, 'Showcase', '展示')}</a>
         <a href="${lang === 'zh' ? '?lang=zh' : '/'}#install">${t(lang, 'Install', '安装')}</a>
-        <a href="${lang === 'zh' ? '?lang=zh' : '/'}#pricing">${t(lang, 'Pricing', '价格')}</a>
-        <a href="${lang === 'zh' ? '?lang=zh' : '/'}#faq">FAQ</a>
         <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank">GitHub</a>
         <a href="?lang=${otherLang}" class="lang-btn">${otherLabel}</a>
       </div>
@@ -249,6 +368,21 @@ export function generateLandingPage(lang: Lang = 'en'): string {
           <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank" class="btn btn-secondary">${t(lang, 'View on GitHub', '查看源码')}</a>
         </div>
         <p class="hero-trust">${t(lang, 'Free · 20 publishes/month · No credit card required', '免费 · 每月 20 次发布 · 无需信用卡')}</p>
+      </div>
+    </section>
+
+    <section id="quick-facts" style="padding-top:40px;padding-bottom:40px;">
+      <div class="wrap">
+        <div class="facts">
+          <ul>
+            <li><strong>${t(lang, 'ShipPage is a zero-config HTML publishing service for AI agents, built on Cloudflare Workers.', 'ShipPage 是一个为 AI Agent 设计的零配置 HTML 发布服务，基于 Cloudflare Workers 构建。')}</strong></li>
+            <li><strong>${t(lang, 'One HTTP POST turns any HTML or Markdown into a public URL — no account, no setup, no build step.', '一次 HTTP POST 就能把任意 HTML 或 Markdown 变成公网 URL —— 无账号、无配置、无构建步骤。')}</strong></li>
+            <li><strong>${t(lang, 'Installs as an OpenClaw skill (clawhub install shippage) or an MCP server (npx shippage-mcp).', '以 OpenClaw Skill（clawhub install shippage）或 MCP Server（npx shippage-mcp）形式安装。')}</strong></li>
+            <li><strong>${t(lang, 'Works with Claude Code, Claude Desktop, Cursor, or any HTTP client via the /v1/publish endpoint.', '支持 Claude Code、Claude Desktop、Cursor，以及任意 HTTP 客户端通过 /v1/publish 接口调用。')}</strong></li>
+            <li><strong>${t(lang, 'Auto-registers your agent on the first publish call — no signup, no form, no email verification.', '首次调用自动注册你的 Agent —— 无需注册、无需填表、无需邮箱验证。')}</strong></li>
+            <li><strong>${t(lang, 'Free tier: 20 publishes per month, 14-day retention, 500KB per page. MIT-licensed.', '免费版：每月 20 次发布、14 天保留、每页 500KB。MIT 协议开源。')}</strong></li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -446,6 +580,34 @@ Content-Type: application/json
             '免费版页面在 14 天后过期，由每日定时任务自动清理。你可以随时重新发布来创建新页面。升级到 Pro 版本（即将推出）可获得永不过期的页面。'
           )}</div>
         </details>
+        <details>
+          <summary>${t(lang, 'How do I publish HTML from Claude Code?', '如何在 Claude Code 里发布 HTML？')}</summary>
+          <div class="faq-body">${t(lang,
+            'Install the ShipPage skill with <code>clawhub install shippage</code>. Then ask Claude: <em>"publish this HTML as a webpage"</em>. Claude generates the HTML and calls the ShipPage API automatically — no API keys, no env vars. The first call registers your agent and returns a public URL plus an api_key for future use.',
+            '使用 <code>clawhub install shippage</code> 安装 ShipPage Skill。然后告诉 Claude：<em>"把这段 HTML 发布成网页"</em>。Claude 会生成 HTML 并自动调用 ShipPage API —— 无需 API Key，无需环境变量。首次调用会自动注册 Agent 并返回公网 URL 以及后续使用的 api_key。'
+          )}</div>
+        </details>
+        <details>
+          <summary>${t(lang, 'What is an MCP server for publishing web pages?', '用来发布网页的 MCP Server 是什么？')}</summary>
+          <div class="faq-body">${t(lang,
+            'An MCP (Model Context Protocol) server is a tool provider that Claude Desktop and Cursor can invoke during a conversation. The ShipPage MCP server (<code>npx shippage-mcp</code>) exposes <code>publish_html</code>, <code>publish_markdown</code>, <code>list_pages</code>, and <code>delete_page</code> tools — the AI calls them directly and returns the resulting URL.',
+            'MCP（Model Context Protocol）Server 是 Claude Desktop 和 Cursor 可以在对话中调用的工具提供方。ShipPage MCP Server（<code>npx shippage-mcp</code>）暴露 <code>publish_html</code>、<code>publish_markdown</code>、<code>list_pages</code>、<code>delete_page</code> 四个工具 —— AI 直接调用并返回 URL。'
+          )}</div>
+        </details>
+        <details>
+          <summary>${t(lang, 'How do I make my published page show up in Google search?', '怎么让发布的页面出现在 Google 搜索里？')}</summary>
+          <div class="faq-body">${t(lang,
+            'Pass <code>"public": true</code> in the publish request body. Public pages receive <code>index,follow</code> robots directives, a canonical link pointing to their shippage.ai URL, and are included in <code>shippage.ai/sitemap.xml</code>. Default pages are <code>noindex,nofollow</code> to prevent spam — opt in per page when you want discoverability.',
+            '在 publish 请求 body 里传 <code>"public": true</code>。公开页面会得到 <code>index,follow</code> 的 robots 指令、指向 shippage.ai URL 的 canonical 链接，并被包含在 <code>shippage.ai/sitemap.xml</code> 中。默认页面是 <code>noindex,nofollow</code> 防止垃圾 —— 需要被检索时按页面开启。'
+          )}</div>
+        </details>
+        <details>
+          <summary>${t(lang, 'Is ShipPage an alternative to Vercel or Netlify?', 'ShipPage 是 Vercel 或 Netlify 的替代吗？')}</summary>
+          <div class="faq-body">${t(lang,
+            'For AI-generated HTML, yes. Vercel and Netlify require accounts, git repositories, and build configuration. ShipPage publishes an HTML string to a public URL with one HTTP POST — no account, no repo, no build. It is purpose-built for AI agents delivering one-shot content, not a full CI/CD pipeline.',
+            '对于 AI 生成的 HTML，是的。Vercel 和 Netlify 需要账号、git 仓库和构建配置。ShipPage 一次 HTTP POST 就能把 HTML 字符串发布到公网 URL —— 无账号、无仓库、无构建。它专为需要一次性交付内容的 AI Agent 设计，而不是完整的 CI/CD 流水线。'
+          )}</div>
+        </details>
       </div>
     </section>
 
@@ -511,9 +673,11 @@ Content-Type: application/json
       <div class="footer-inner">
         <span class="footer-copy">© 2026 ShipPage · ${t(lang, 'Built on Cloudflare Workers', '基于 Cloudflare Workers 构建')}</span>
         <div class="footer-links">
+          <a href="/blog">${t(lang, 'Blog', '博客')}</a>
+          <a href="/templates">${t(lang, 'Templates', '模板')}</a>
+          <a href="/showcase">${t(lang, 'Showcase', '展示')}</a>
+          <a href="/changelog">${t(lang, 'Changelog', '更新日志')}</a>
           <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank">GitHub</a>
-          <a href="https://www.npmjs.com/package/shippage-mcp" target="_blank">npm</a>
-          <a href="https://clawhub.ai/skills/shippage" target="_blank">ClawHub</a>
           <a href="/health">API Status</a>
         </div>
       </div>

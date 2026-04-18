@@ -9,7 +9,7 @@ const publish = new Hono<AppBindings>();
 
 publish.post('/v1/publish', authMiddleware(false), async (c) => {
   const body = await c.req.json();
-  const { html, slug: customSlug, password, expires_in, title } = body;
+  const { html, slug: customSlug, password, expires_in, title, public: isPublic } = body;
 
   if (!html || typeof html !== 'string') {
     return c.json({ ok: false, error: 'html field is required' }, 400);
@@ -74,21 +74,17 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
   const ttl = expires_in || 14 * 24 * 60 * 60; // 默认 14 天
   const expires_at = new Date(Date.now() + ttl * 1000).toISOString();
 
-  // 注入水印（免费用户）
-  const finalHtml = injectWatermark(html, c.env.SITE_URL);
+  const finalHtml = injectWatermark(html, {
+    siteUrl: c.env.SITE_URL,
+    slug,
+    isPublic: isPublic === true,
+    title,
+  });
 
-  // 注入 noindex meta tag
-  const htmlWithMeta = finalHtml.replace(
-    /<head>/i,
-    '<head><meta name="robots" content="noindex,nofollow">'
-  );
-
-  // 存储 HTML 到 R2
-  await c.env.PAGES_BUCKET.put(`pages/${slug}.html`, htmlWithMeta, {
+  await c.env.PAGES_BUCKET.put(`pages/${slug}.html`, finalHtml, {
     customMetadata: { agent_id: agent.agent_id, expires_at },
   });
 
-  // 存储元数据到 KV
   const pageMeta = {
     slug,
     agent_id: agent.agent_id,
@@ -97,6 +93,7 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
     expires_at,
     password_protected: !!password,
     password_hash: password ? await hashPassword(password) : null,
+    is_public: isPublic === true,
     views: 0,
   };
   await c.env.META.put(`page:${slug}`, JSON.stringify(pageMeta));
