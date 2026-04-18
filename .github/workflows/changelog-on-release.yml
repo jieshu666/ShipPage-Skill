@@ -1,0 +1,58 @@
+name: Changelog on release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve version and previous tag
+        id: refs
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          PREV=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
+          echo "Generating changelog for $TAG (from $PREV)"
+
+      - name: Generate changelog entry
+        run: node .github/scripts/update-changelog.mjs "${{ steps.refs.outputs.version }}" "${{ steps.refs.outputs.prev }}" "${{ steps.refs.outputs.tag }}"
+
+      - name: Type-check
+        run: |
+          npm ci || npm install
+          npx tsc --noEmit
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: changelog/${{ steps.refs.outputs.tag }}
+          base: main
+          commit-message: "docs(changelog): add entry for ${{ steps.refs.outputs.tag }}"
+          title: "docs(changelog): add entry for ${{ steps.refs.outputs.tag }}"
+          body: |
+            Auto-generated changelog entry for `${{ steps.refs.outputs.tag }}`, built from Conventional Commits between `${{ steps.refs.outputs.prev }}` and `${{ steps.refs.outputs.tag }}`.
+
+            Review the generated copy in `src/content/changelog.ts` — tweak wording if needed, then squash-merge to publish at `shippage.ai/changelog`.
+          add-paths: src/content/changelog.ts
+          delete-branch: true

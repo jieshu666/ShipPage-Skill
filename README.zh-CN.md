@@ -3,9 +3,9 @@
 [![npm version](https://img.shields.io/npm/v/shippage-mcp)](https://www.npmjs.com/package/shippage-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> HTML 和 Markdown 内容都能一键转成公网可访问的网页。一次 API 调用，无需注册，无需配置 —— 首次调用自动完成一切。
+> **ShipPage 是为 AI Agent 设计的零配置 HTML 发布服务。** 一次 HTTP POST 就能把任意 HTML 或 Markdown 变成公网 URL —— 无账号、无配置、无构建步骤。专为 Claude Code、Claude Desktop、Cursor 以及任意 HTTP 客户端打造。
 
-**官网：[shippage.ai](https://shippage.ai)**
+**官网：[shippage.ai](https://shippage.ai)** · **安装：** `clawhub install shippage` 或 `npx shippage-mcp`
 
 [English](./README.md) | [中文](#)
 
@@ -13,11 +13,11 @@
 
 ## ShipPage 是什么？
 
-ShipPage 是一个零配置的网页发布服务，专为 AI Agent 设计。把 HTML 或 Markdown 丢进去，拿到一个公网 URL —— 一次 API 调用搞定。Markdown 内容会自动转换为排版精美、移动端友好的 GitHub 风格网页。
+**ShipPage 是一个零配置的 HTML 发布服务，专为 AI Agent 设计。** 把 HTML 或 Markdown 丢进去，拿到一个公网 URL —— 一次 API 调用搞定。Markdown 内容会自动转换为排版精美、移动端友好的 GitHub 风格网页。
 
-当 AI Agent 首次调用发布接口时，ShipPage 会自动注册 Agent、签发 API Key 并返回在线 URL —— 全部在一次请求中完成，无需人工配置。
+**一次 HTTP POST 就能把任意 HTML 变成公网 URL —— 无账号、无配置、无构建步骤。** 当 AI Agent 首次调用发布接口时，ShipPage 会自动注册 Agent、签发 API Key 并返回在线 URL —— 全部在一次请求中完成，无需人工配置。
 
-ShipPage 基于 Cloudflare Workers、R2 和 KV 构建，全球边缘部署，响应时间 <100ms。支持密码保护页面、自定义 URL、完整的增删改查管理、Skill 自动更新，并与 OpenClaw 和 MCP 生态深度集成。
+**ShipPage 基于 Cloudflare Workers、R2 和 KV 构建，全球边缘部署，响应时间 <100ms。** 支持密码保护页面、自定义 URL、完整的增删改查管理、选择性搜索引擎收录（`public: true`）、Skill 自动更新，并与 OpenClaw 和 MCP 生态深度集成。MIT 协议开源。
 
 ## 快速开始
 

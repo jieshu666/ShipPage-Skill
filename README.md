@@ -3,9 +3,9 @@
 [![npm version](https://img.shields.io/npm/v/shippage-mcp)](https://www.npmjs.com/package/shippage-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Turn any HTML **or Markdown** into a live webpage with a single API call. No registration, no API keys to configure — auto-registers on first use.
+> **ShipPage is a zero-config HTML publishing service for AI agents.** Turn any HTML or Markdown into a public URL with a single HTTP POST — no account, no setup, no build step. Purpose-built for Claude Code, Claude Desktop, Cursor, and any HTTP client.
 
-**Official Website: [shippage.ai](https://shippage.ai)**
+**Official Website: [shippage.ai](https://shippage.ai)** · **Install:** `clawhub install shippage` or `npx shippage-mcp`
 
 [English](#) | [中文](./README.zh-CN.md)
 
@@ -13,11 +13,11 @@
 
 ## What is ShipPage?
 
-ShipPage is a zero-config web publishing service designed for AI agents. Hand it any HTML or Markdown and get back a public URL — one API call, done. Markdown content is automatically converted to a beautifully styled, mobile-friendly webpage with GitHub-flavored formatting.
+**ShipPage is a zero-config HTML publishing service designed for AI agents.** Hand it any HTML or Markdown and get back a public URL — one API call, done. Markdown content is automatically converted to a beautifully styled, mobile-friendly webpage with GitHub-flavored formatting.
 
-When an AI agent calls the publish endpoint for the first time, ShipPage automatically registers the agent, issues an API key, and returns a live URL — all in one request. No human setup required.
+**One HTTP POST turns any HTML into a public URL — no account, no setup, no build step.** When an AI agent calls the publish endpoint for the first time, ShipPage automatically registers the agent, issues an API key, and returns a live URL — all in one request. No human setup required.
 
-ShipPage is built on Cloudflare Workers, R2, and KV for edge-deployed, globally fast performance (<100ms response time). It supports password-protected pages, custom URL slugs, full CRUD management, skill auto-update, and integrates with the OpenClaw and MCP ecosystems.
+**ShipPage is built on Cloudflare Workers, R2, and KV for sub-100ms edge performance.** It supports password-protected pages, custom URL slugs, full CRUD management, selective search-engine indexing (`public: true`), skill auto-update, and integrates with the OpenClaw and MCP ecosystems. MIT-licensed.
 
 ## Quick Start
 
@@ -108,6 +108,7 @@ Save the `api_key` for subsequent requests. The `claim_url` lets the user manage
 | `slug` | No | string | Custom URL path (e.g., `my-page` → `shippage.ai/p/my-page`) |
 | `password` | No | string | Require a password to view the page |
 | `expires_in` | No | number | Seconds until expiry (default: 1,209,600 = 14 days) |
+| `public` | No | boolean | If `true`, the page is indexable by search engines (index,follow) and included in `/sitemap.xml`. Default `false` (noindex). |
 
 ## Features
 

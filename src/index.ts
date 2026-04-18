@@ -8,6 +8,11 @@ import skill from './routes/skill';
 import claim from './routes/claim';
 import auth from './routes/auth';
 import account from './routes/account';
+import seo from './routes/seo';
+import showcase from './routes/showcase';
+import templates from './routes/templates';
+import blog from './routes/blog';
+import changelog from './routes/changelog';
 import { sessionMiddleware } from './middleware/session';
 import { handleCron } from './cron/cleanup';
 import { generateLandingPage } from './landing/page';
@@ -34,11 +39,16 @@ app.route('/', serve);
 app.route('/', waitlist);
 app.route('/', skill);
 app.route('/', claim);
+app.route('/', seo);
+app.route('/', showcase);
+app.route('/', templates);
+app.route('/', blog);
+app.route('/', changelog);
 
 // 落地页
 app.get('/', (c) => {
   const lang = c.req.query('lang') === 'zh' ? 'zh' : 'en';
-  return c.html(generateLandingPage(lang));
+  return c.html(generateLandingPage(lang, c.env.PLAUSIBLE_DOMAIN));
 });
 
 // Health check
