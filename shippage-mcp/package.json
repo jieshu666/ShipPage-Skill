@@ -1,6 +1,7 @@
 {
   "name": "shippage-mcp",
   "version": "1.2.1",
+  "mcpName": "io.github.jieshu666/shippage",
   "description": "MCP server for ShipPage — publish HTML or Markdown to a public URL in one call. Zero config, auto-registers on first use. Works with Claude Desktop, Claude Code, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",
