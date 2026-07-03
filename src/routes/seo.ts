@@ -5,6 +5,7 @@ import { templates } from '../content/templates';
 import { changelog } from '../content/changelog';
 import { listAllKeys, readPageMetas } from '../utils/kv';
 import { OG_PNG_BASE64 } from '../assets/og-image';
+import { DOC_SLUGS } from './docs';
 
 const seo = new Hono<AppBindings>();
 
@@ -75,10 +76,18 @@ seo.get('/sitemap.xml', async (c) => {
     { loc: `${base}/`, changefreq: 'weekly', priority: '1.0', lastmod: latestChange },
     { loc: `${base}/?lang=zh`, changefreq: 'weekly', priority: '0.9', lastmod: latestChange },
     { loc: `${base}/blog`, changefreq: 'weekly', priority: '0.9', lastmod: posts[0]?.updatedAt || posts[0]?.publishedAt || SITE_LASTMOD },
+    { loc: `${base}/docs`, changefreq: 'weekly', priority: '0.9', lastmod: SITE_LASTMOD },
+    { loc: `${base}/pricing`, changefreq: 'monthly', priority: '0.7', lastmod: SITE_LASTMOD },
     { loc: `${base}/templates`, changefreq: 'monthly', priority: '0.8', lastmod: SITE_LASTMOD },
     { loc: `${base}/showcase`, changefreq: 'daily', priority: '0.7' },
     { loc: `${base}/changelog`, changefreq: 'weekly', priority: '0.7', lastmod: latestChange },
   ];
+
+  // Docs guide pages (each targets a high-intent query).
+  for (const slug of DOC_SLUGS) {
+    if (!slug) continue; // hub already added above
+    urls.push({ loc: `${base}/docs/${slug}`, changefreq: 'monthly', priority: '0.8', lastmod: SITE_LASTMOD });
+  }
 
   for (const p of posts) {
     urls.push({
@@ -154,10 +163,16 @@ ShipPage turns any HTML or Markdown into a live webpage via a single POST reques
 
 ## Docs
 
-- [Landing page](${siteUrl}/)
+- [Documentation home](${siteUrl}/docs)
+- [Quickstart](${siteUrl}/docs/quickstart): publish your first page in one call
+- [API reference](${siteUrl}/docs/api): endpoints, parameters, limits, errors
+- [Publish from Claude Code](${siteUrl}/docs/claude-code)
+- [Publish from Claude Desktop & Cursor (MCP)](${siteUrl}/docs/claude-desktop)
+- [Publish from any HTTP client](${siteUrl}/docs/http)
+- [Publishing Markdown](${siteUrl}/docs/markdown)
+- [Pricing](${siteUrl}/pricing)
 - [Blog](${siteUrl}/blog)
 - [Templates](${siteUrl}/templates)
-- [Showcase](${siteUrl}/showcase)
 - [Changelog](${siteUrl}/changelog)
 - [GitHub repository](https://github.com/jieshu666/ShipPage-Skill)
 - [npm package (shippage-mcp)](https://www.npmjs.com/package/shippage-mcp)

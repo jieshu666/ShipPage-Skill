@@ -13,6 +13,8 @@ import showcase from './routes/showcase';
 import templates from './routes/templates';
 import blog from './routes/blog';
 import changelog from './routes/changelog';
+import docs from './routes/docs';
+import pricing from './routes/pricing';
 import { sessionMiddleware } from './middleware/session';
 import { handleCron } from './cron/cleanup';
 import { generateLandingPage } from './landing/page';
@@ -44,6 +46,8 @@ app.route('/', showcase);
 app.route('/', templates);
 app.route('/', blog);
 app.route('/', changelog);
+app.route('/', docs);
+app.route('/', pricing);
 
 // 落地页
 app.get('/', (c) => {
