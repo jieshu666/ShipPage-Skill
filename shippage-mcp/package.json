@@ -1,7 +1,7 @@
 {
   "name": "shippage-mcp",
-  "version": "1.2.0",
-  "description": "MCP Server for ShipPage - instant HTML publishing for AI agents. Zero config.",
+  "version": "1.2.1",
+  "description": "MCP server for ShipPage — publish HTML or Markdown to a public URL in one call. Zero config, auto-registers on first use. Works with Claude Desktop, Claude Code, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -13,11 +13,28 @@
   },
   "keywords": [
     "mcp",
+    "mcp-server",
+    "model-context-protocol",
     "publish",
-    "html",
+    "publish-html",
+    "html-hosting",
+    "markdown",
     "ai-agent",
+    "claude",
+    "claude-code",
+    "cursor",
     "shippage"
   ],
+  "homepage": "https://shippage.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jieshu666/ShipPage-Skill.git",
+    "directory": "shippage-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/jieshu666/ShipPage-Skill/issues"
+  },
+  "author": "ShipPage (https://shippage.ai)",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",

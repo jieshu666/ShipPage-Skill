@@ -111,7 +111,7 @@ function renderIndex(siteUrl: string, plausibleDomain?: string): string {
   <meta property="og:title" content="ShipPage Blog">
   <meta property="og:description" content="Guides on publishing HTML from AI agents.">
   <meta property="og:url" content="${siteUrl}/blog">
-  <meta property="og:image" content="${siteUrl}/og.svg">
+  <meta property="og:image" content="${siteUrl}/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="alternate" type="application/rss+xml" title="ShipPage Blog" href="${siteUrl}/blog/rss.xml">
   ${plausibleTag(plausibleDomain)}
@@ -173,14 +173,14 @@ function renderPost(post: BlogPost, siteUrl: string, plausibleDomain?: string): 
   <meta property="og:title" content="${escapeHtml(post.title)}">
   <meta property="og:description" content="${escapeHtml(post.description)}">
   <meta property="og:url" content="${url}">
-  <meta property="og:image" content="${siteUrl}/og.svg">
+  <meta property="og:image" content="${siteUrl}/og.png">
   <meta property="article:published_time" content="${post.publishedAt}">
   <meta property="article:author" content="${escapeHtml(post.author)}">
   ${post.tags.map((t) => `<meta property="article:tag" content="${escapeHtml(t)}">`).join('\n  ')}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(post.title)}">
   <meta name="twitter:description" content="${escapeHtml(post.description)}">
-  <meta name="twitter:image" content="${siteUrl}/og.svg">
+  <meta name="twitter:image" content="${siteUrl}/og.png">
   ${plausibleTag(plausibleDomain)}
   <script type="application/ld+json">${JSON.stringify(jsonLdArticle)}</script>
   <script type="application/ld+json">${JSON.stringify(jsonLdBreadcrumb)}</script>

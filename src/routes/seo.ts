@@ -3,10 +3,33 @@ import type { AppBindings } from '../types';
 import { posts } from '../content/blog';
 import { templates } from '../content/templates';
 import { changelog } from '../content/changelog';
+import { listAllKeys, readPageMetas } from '../utils/kv';
+import { OG_PNG_BASE64 } from '../assets/og-image';
 
 const seo = new Hono<AppBindings>();
 
+// Decode the embedded OG PNG once at module load.
+const OG_PNG_BYTES = Uint8Array.from(atob(OG_PNG_BASE64), (c) => c.charCodeAt(0));
+
+seo.get('/og.png', () => {
+  return new Response(OG_PNG_BYTES, {
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=604800, immutable',
+    },
+  });
+});
+
+// Date the marketing surface last shipped a content change. Used for honest
+// sitemap lastmod on pages that don't carry their own date (home, templates).
+const SITE_LASTMOD = '2026-07-03';
+
 seo.get('/robots.txt', (c) => {
+  // A single catch-all group. Named per-bot groups in robots.txt do NOT
+  // inherit the '*' rules — each bot only reads its own group — so the old
+  // per-bot blocks silently dropped every Disallow. One '*' group that allows
+  // crawling and blocks private/API paths applies to every crawler, including
+  // AI retrieval bots (GPTBot, ClaudeBot, OAI-SearchBot, PerplexityBot, etc.).
   const body = `User-agent: *
 Allow: /
 Disallow: /claim
@@ -14,27 +37,27 @@ Disallow: /account
 Disallow: /auth
 Disallow: /v1/
 
-User-agent: GPTBot
-Allow: /
-Allow: /blog/
-Allow: /templates/
-Allow: /showcase/
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
 Sitemap: ${c.env.SITE_URL}/sitemap.xml
 `;
   return new Response(body, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
   });
 });
+
+// Favicon — browsers request /favicon.ico by default; an SVG favicon covers
+// modern browsers, and the landing page also links it explicitly.
+seo.get('/favicon.svg', (c) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+  <path d="M18 40 L32 18 L46 40 Z" fill="none" stroke="#f97316" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="32" cy="46" r="4" fill="#f97316"/>
+</svg>`;
+  return new Response(svg, {
+    headers: { 'Content-Type': 'image/svg+xml; charset=utf-8', 'Cache-Control': 'public, max-age=604800, immutable' },
+  });
+});
+
+seo.get('/favicon.ico', (c) => c.redirect('/favicon.svg', 301));
 
 seo.get('/sitemap.xml', async (c) => {
   const cached = await c.env.META.get('cache:sitemap');
@@ -45,15 +68,16 @@ seo.get('/sitemap.xml', async (c) => {
   }
 
   const base = c.env.SITE_URL;
-  const now = new Date().toISOString().split('T')[0];
+  const latestChange = changelog[0]?.date || SITE_LASTMOD;
+  // Marketing pages: only emit lastmod when we know a real change date. Faking
+  // "today" on every request trains crawlers to ignore the signal.
   const urls: Array<{ loc: string; changefreq: string; priority: string; lastmod?: string }> = [
-    { loc: `${base}/`, changefreq: 'weekly', priority: '1.0', lastmod: now },
-    { loc: `${base}/?lang=zh`, changefreq: 'weekly', priority: '0.9', lastmod: now },
-    { loc: `${base}/blog`, changefreq: 'weekly', priority: '0.9', lastmod: now },
-    { loc: `${base}/templates`, changefreq: 'monthly', priority: '0.8', lastmod: now },
-    { loc: `${base}/showcase`, changefreq: 'daily', priority: '0.7', lastmod: now },
-    { loc: `${base}/changelog`, changefreq: 'weekly', priority: '0.7', lastmod: changelog[0]?.date || now },
-    { loc: `${base}/claim`, changefreq: 'monthly', priority: '0.5' },
+    { loc: `${base}/`, changefreq: 'weekly', priority: '1.0', lastmod: latestChange },
+    { loc: `${base}/?lang=zh`, changefreq: 'weekly', priority: '0.9', lastmod: latestChange },
+    { loc: `${base}/blog`, changefreq: 'weekly', priority: '0.9', lastmod: posts[0]?.updatedAt || posts[0]?.publishedAt || SITE_LASTMOD },
+    { loc: `${base}/templates`, changefreq: 'monthly', priority: '0.8', lastmod: SITE_LASTMOD },
+    { loc: `${base}/showcase`, changefreq: 'daily', priority: '0.7' },
+    { loc: `${base}/changelog`, changefreq: 'weekly', priority: '0.7', lastmod: latestChange },
   ];
 
   for (const p of posts) {
@@ -70,24 +94,23 @@ seo.get('/sitemap.xml', async (c) => {
       loc: `${base}/templates/${tpl.slug}`,
       changefreq: 'monthly',
       priority: '0.7',
-      lastmod: now,
+      lastmod: SITE_LASTMOD,
     });
   }
 
+  // Public user pages — read from KV list metadata (no per-key N+1 loop).
   try {
-    const list = await c.env.META.list({ prefix: 'page:', limit: 1000 });
-    for (const key of list.keys) {
-      const slug = key.name.slice('page:'.length);
-      const metaStr = await c.env.META.get(key.name);
-      if (!metaStr) continue;
-      const meta = JSON.parse(metaStr);
+    const now = new Date();
+    const keys = await listAllKeys(c.env.META, 'page:');
+    const metas = await readPageMetas(c.env.META, keys);
+    for (const meta of metas) {
       if (meta.is_public !== true) continue;
-      if (meta.expires_at && new Date(meta.expires_at) < new Date()) continue;
+      if (meta.expires_at && new Date(meta.expires_at) < now) continue;
       urls.push({
-        loc: `${base}/p/${slug}`,
+        loc: `${base}/p/${meta.slug}`,
         changefreq: 'weekly',
-        priority: '0.7',
-        lastmod: meta.created_at ? meta.created_at.split('T')[0] : now,
+        priority: '0.6',
+        lastmod: meta.created_at ? meta.created_at.split('T')[0] : undefined,
       });
     }
   } catch {}

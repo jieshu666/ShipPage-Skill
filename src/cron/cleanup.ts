@@ -1,27 +1,40 @@
-export async function handleCron(env: any) {
-  // 列出所有 page: 开头的 KV keys
-  const list = await env.META.list({ prefix: 'page:' });
+import { listAllKeys, readPageMetas } from '../utils/kv';
 
+export async function handleCron(env: any) {
   const now = new Date();
   let cleaned = 0;
 
-  for (const key of list.keys) {
-    const metaStr = await env.META.get(key.name);
-    if (!metaStr) continue;
+  // Read expiry from KV list metadata so scanning the whole keyspace costs
+  // ~O(pages/1000) subrequests instead of one get() per page.
+  const keys = await listAllKeys(env.META, 'page:', 10000);
+  const metas = await readPageMetas(env.META, keys, 900);
 
-    const meta = JSON.parse(metaStr);
-    if (now > new Date(meta.expires_at)) {
-      // 删除 R2 文件
-      await env.PAGES_BUCKET.delete(`pages/${meta.slug}.html`);
-      // 删除 KV 元数据
-      await env.META.delete(key.name);
-      // 从 agent 的页面列表中移除
-      const agentPages = JSON.parse(await env.META.get(`pages:${meta.agent_id}`) || '[]');
-      const updated = agentPages.filter((s: string) => s !== meta.slug);
-      await env.META.put(`pages:${meta.agent_id}`, JSON.stringify(updated));
-      cleaned++;
+  // Group deletions by agent so we only rewrite each pages:<agent> list once,
+  // instead of a racy read-modify-write per deleted page.
+  const expired: { key: string; slug: string; agent_id: string }[] = [];
+  for (const meta of metas) {
+    if (meta.expires_at && now > new Date(meta.expires_at)) {
+      expired.push({ key: `page:${meta.slug}`, slug: meta.slug, agent_id: meta.agent_id || '' });
     }
   }
 
-  console.log(`Cron cleanup: removed ${cleaned} expired pages`);
+  for (const e of expired) {
+    await env.PAGES_BUCKET.delete(`pages/${e.slug}.html`);
+    await env.META.delete(e.key);
+    cleaned++;
+  }
+
+  // Prune each affected agent's page list once.
+  const bySlug = new Set(expired.map((e) => e.slug));
+  const agents = [...new Set(expired.map((e) => e.agent_id).filter(Boolean))];
+  for (const agentId of agents) {
+    const listKey = `pages:${agentId}`;
+    const agentPages: string[] = JSON.parse((await env.META.get(listKey)) || '[]');
+    const kept = agentPages.filter((s) => !bySlug.has(s));
+    if (kept.length !== agentPages.length) {
+      await env.META.put(listKey, JSON.stringify(kept));
+    }
+  }
+
+  console.log(`Cron cleanup: removed ${cleaned} expired pages across ${agents.length} agents`);
 }

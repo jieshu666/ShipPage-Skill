@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { AppBindings, UserRecord, AgentRecord } from '../types';
+import { escapeHtml } from '../utils/escape';
 
 const account = new Hono<AppBindings>();
 
@@ -61,16 +62,17 @@ function renderAccountPage(
   agents: { agent: AgentRecord; pageCount: number; claimCode: string }[],
 ): string {
   const agentRows = agents.map(({ agent, pageCount, claimCode }) => {
-    const name = agent.display_name || agent.agent_id;
-    return `<tr data-agent-id="${agent.agent_id}">
+    const name = escapeHtml(agent.display_name || agent.agent_id);
+    const agentId = escapeHtml(agent.agent_id);
+    return `<tr data-agent-id="${agentId}">
       <td>
-        <span class="agent-name" id="name-${agent.agent_id}">${name}</span>
-        <button class="act-btn rename-btn" data-id="${agent.agent_id}" data-name="${name}">Rename</button>
+        <span class="agent-name" id="name-${agentId}">${name}</span>
+        <button class="act-btn rename-btn" data-id="${agentId}" data-name="${name}">Rename</button>
       </td>
-      <td><code>${agent.agent_id}</code></td>
+      <td><code>${agentId}</code></td>
       <td>${pageCount}</td>
       <td>${agent.usage_this_month} / 20</td>
-      <td><a href="/claim/${claimCode}" style="color:#f97316;">Manage</a></td>
+      <td><a href="/claim/${encodeURIComponent(claimCode)}" style="color:#f97316;">Manage</a></td>
     </tr>`;
   }).join('');
 
@@ -128,10 +130,10 @@ function renderAccountPage(
     <h1>My Account</h1>
 
     <div class="profile">
-      <img src="${user.picture}" alt="" referrerpolicy="no-referrer">
+      <img src="${escapeHtml(user.picture)}" alt="" referrerpolicy="no-referrer">
       <div class="profile-info">
-        <div class="profile-name">${user.name}</div>
-        <div class="profile-email">${user.email}</div>
+        <div class="profile-name">${escapeHtml(user.name)}</div>
+        <div class="profile-email">${escapeHtml(user.email)}</div>
       </div>
     </div>
 

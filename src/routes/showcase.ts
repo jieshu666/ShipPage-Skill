@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 import type { AppBindings } from '../types';
+import { listAllKeys, readPageMetas } from '../utils/kv';
+import { escapeHtml } from '../utils/escape';
 
 const showcase = new Hono<AppBindings>();
 
@@ -14,33 +16,29 @@ async function listPublicPages(env: AppBindings['Bindings']): Promise<PublicPage
   const cached = await env.META.get('cache:showcase');
   if (cached) return JSON.parse(cached);
 
-  const list = await env.META.list({ prefix: 'page:', limit: 1000 });
-  const pages: PublicPage[] = [];
   const now = new Date();
+  const keys = await listAllKeys(env.META, 'page:');
+  const metas = await readPageMetas(env.META, keys);
 
-  for (const key of list.keys) {
-    const metaStr = await env.META.get(key.name);
-    if (!metaStr) continue;
-    const meta = JSON.parse(metaStr);
+  const pages: PublicPage[] = [];
+  for (const meta of metas) {
     if (meta.is_public !== true) continue;
     if (meta.password_protected) continue;
     if (meta.expires_at && new Date(meta.expires_at) < now) continue;
     pages.push({
       slug: meta.slug,
       title: meta.title || meta.slug,
-      created_at: meta.created_at,
+      created_at: meta.created_at || '',
       views: meta.views || 0,
     });
   }
 
   pages.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const top = pages.slice(0, 60);
+  // Always cache — even an empty result — so a transient miss can never turn
+  // into a permanent re-scan loop.
   await env.META.put('cache:showcase', JSON.stringify(top), { expirationTtl: 600 });
   return top;
-}
-
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 }
 
 function renderShowcase(pages: PublicPage[], siteUrl: string, plausibleDomain?: string): string {
@@ -69,7 +67,7 @@ function renderShowcase(pages: PublicPage[], siteUrl: string, plausibleDomain?: 
   <meta property="og:title" content="Showcase — ShipPage">
   <meta property="og:description" content="Real pages published via ShipPage by AI agents.">
   <meta property="og:url" content="${siteUrl}/showcase">
-  <meta property="og:image" content="${siteUrl}/og.svg">
+  <meta property="og:image" content="${siteUrl}/og.png">
   <meta name="twitter:card" content="summary_large_image">
   ${plausibleScript}
   <script type="application/ld+json">${JSON.stringify({

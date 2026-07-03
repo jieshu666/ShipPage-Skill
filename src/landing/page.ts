@@ -9,38 +9,70 @@ export function generateLandingPage(lang: Lang = 'en', plausibleDomain?: string)
   const plausibleScript = plausibleDomain
     ? `<script defer data-domain="${plausibleDomain}" src="https://plausible.io/js/script.outbound-links.js"></script>`
     : '';
+  // Demo response shows a real "14 days from now" expiry instead of a hardcoded
+  // past date (a past-dated demo reads as abandoned).
+  const demoExpiry = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('.')[0] + 'Z';
 
   return `<!DOCTYPE html>
 <html lang="${htmlLang}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShipPage — Instant HTML Publishing for AI Agents | Zero Config</title>
+  <title>${t(lang, 'ShipPage — Instant HTML Publishing for AI Agents | Zero Config', 'ShipPage — AI 智能体的即时网页发布服务 | 零配置')}</title>
   ${plausibleScript}
-  <meta name="description" content="Publish HTML to a public URL in seconds. Zero config, zero registration. Install the OpenClaw Skill or MCP Server and your AI agent can publish web pages instantly. Free tier: 20 publishes/month.">
-  <meta name="keywords" content="HTML publishing, AI agent, MCP server, OpenClaw, Claude, Cursor, web publishing, zero config, instant deploy">
+  <meta name="description" content="${t(lang, 'Publish HTML to a public URL in seconds. Zero config, zero registration. Install the OpenClaw Skill or MCP Server and your AI agent can publish web pages instantly. Free tier: 20 publishes/month.', '一次 API 调用，把 HTML 或 Markdown 发布成公开网页。零配置、零注册，AI 智能体首次调用即自动注册。安装 OpenClaw 技能或 MCP Server 即可让智能体秒发网页。免费额度：每月 20 次发布。')}">
   <meta name="robots" content="index,follow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="alternate" type="application/rss+xml" title="ShipPage Blog" href="https://shippage.ai/blog/rss.xml">
   <link rel="canonical" href="https://shippage.ai${lang === 'zh' ? '/?lang=zh' : '/'}">
   <link rel="alternate" hreflang="en" href="https://shippage.ai/">
   <link rel="alternate" hreflang="zh-CN" href="https://shippage.ai/?lang=zh">
   <link rel="alternate" hreflang="x-default" href="https://shippage.ai/">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="ShipPage — HTML in. URL out. Zero config.">
-  <meta property="og:description" content="Instant HTML publishing for AI agents. No registration. No config. Install and go. Free tier: 20 publishes/month.">
+  <meta property="og:title" content="${t(lang, 'ShipPage — HTML in. URL out. Zero config.', 'ShipPage — HTML 进，URL 出。零配置。')}">
+  <meta property="og:description" content="${t(lang, 'Instant HTML publishing for AI agents. No registration. No config. Install and go. Free tier: 20 publishes/month.', 'AI 智能体的即时网页发布。零注册、零配置，装完即用。免费额度：每月 20 次发布。')}">
   <meta property="og:url" content="https://shippage.ai${lang === 'zh' ? '/?lang=zh' : '/'}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ShipPage">
-  <meta property="og:image" content="https://shippage.ai/og.svg">
+  <meta property="og:image" content="https://shippage.ai/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:locale" content="${lang === 'zh' ? 'zh_CN' : 'en_US'}">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ShipPage — HTML in. URL out. Zero config.">
-  <meta name="twitter:description" content="Instant HTML publishing for AI agents. No registration. No config. Install and go.">
-  <meta name="twitter:image" content="https://shippage.ai/og.svg">
+  <meta name="twitter:title" content="${t(lang, 'ShipPage — HTML in. URL out. Zero config.', 'ShipPage — HTML 进，URL 出。零配置。')}">
+  <meta name="twitter:description" content="${t(lang, 'Instant HTML publishing for AI agents. No registration. No config. Install and go.', 'AI 智能体的即时网页发布。零注册、零配置，装完即用。')}">
+  <meta name="twitter:image" content="https://shippage.ai/og.png">
+
+  <!-- JSON-LD: Organization + WebSite (entity + sameAs for GEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://shippage.ai/#org",
+        "name": "ShipPage",
+        "url": "https://shippage.ai",
+        "logo": "https://shippage.ai/favicon.svg",
+        "sameAs": [
+          "https://github.com/jieshu666/ShipPage-Skill",
+          "https://www.npmjs.com/package/shippage-mcp"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://shippage.ai/#website",
+        "name": "ShipPage",
+        "url": "https://shippage.ai",
+        "publisher": { "@id": "https://shippage.ai/#org" },
+        "inLanguage": ["en", "zh-CN"]
+      }
+    ]
+  }
+  </script>
 
   <!-- JSON-LD: SoftwareApplication -->
   <script type="application/ld+json">
@@ -436,7 +468,7 @@ Content-Type: application/json
   <span class="s-key">"ok"</span>: <span class="s-bool">true</span>,
   <span class="s-key">"url"</span>: <span class="s-str">"https://shippage.ai/p/x7k2m9"</span>,
   <span class="s-key">"slug"</span>: <span class="s-str">"x7k2m9"</span>,
-  <span class="s-key">"expires_at"</span>: <span class="s-str">"2026-04-05T14:30:00Z"</span>,
+  <span class="s-key">"expires_at"</span>: <span class="s-str">"${demoExpiry}"</span>,
   <span class="s-key">"_registration"</span>: {
     <span class="s-key">"api_key"</span>: <span class="s-str">"sk_..."</span>,
     <span class="s-key">"claim_url"</span>: <span class="s-str">"https://shippage.ai/claim/ABCD-1234"</span>

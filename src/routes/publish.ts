@@ -3,9 +3,18 @@ import { autoRegister, incrementUsage } from '../auth/auto-register';
 import { generateSlug } from '../utils/id';
 import { injectWatermark } from '../utils/watermark';
 import { authMiddleware } from '../auth/verify';
+import { toPageMetaLite } from '../utils/kv';
 import type { AppBindings } from '../types';
 
 const publish = new Hono<AppBindings>();
+
+// Slugs that would collide with top-level routes if used as /p/... is fine,
+// but custom slugs also become public identifiers — keep the obvious ones off-limits.
+const RESERVED_SLUGS = new Set([
+  'admin', 'account', 'auth', 'claim', 'api', 'v1', 'blog', 'templates',
+  'showcase', 'changelog', 'pricing', 'docs', 'health', 'p', 'sitemap',
+  'robots', 'favicon', 'llms', 'og', 'shippage', 'www',
+]);
 
 publish.post('/v1/publish', authMiddleware(false), async (c) => {
   const body = await c.req.json();
@@ -18,6 +27,17 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
   // 检查文件大小（免费用户 500KB）
   if (new Blob([html]).size > 500 * 1024) {
     return c.json({ ok: false, error: 'HTML exceeds 500KB limit' }, 413);
+  }
+
+  // 校验自定义 slug：只允许小写字母、数字、连字符，避免污染 R2 key /
+  // 与保留路由冲突（如 slug="../x" 会写到 pages/../x.html）
+  if (customSlug !== undefined) {
+    if (typeof customSlug !== 'string' || !/^[a-z0-9-]{1,64}$/.test(customSlug)) {
+      return c.json({ ok: false, error: 'Invalid slug: use 1–64 lowercase letters, numbers, or hyphens' }, 400);
+    }
+    if (RESERVED_SLUGS.has(customSlug)) {
+      return c.json({ ok: false, error: 'That slug is reserved' }, 409);
+    }
   }
 
   let agent = c.get('agent');
@@ -39,6 +59,21 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
     };
   }
 
+  // 生成 slug 并检查冲突（在扣额度之前，避免为一次失败的发布计费）
+  const slug = customSlug || generateSlug();
+  const existing = await c.env.META.get(`page:${slug}`);
+  // Return _registration on failure too, so a just-auto-registered agent never
+  // loses the api_key it will need to retry.
+  if (existing && !customSlug) {
+    return c.json({ ok: false, error: 'Slug collision, please retry', ...(registration ? { _registration: registration } : {}) }, 409);
+  }
+  if (existing && customSlug) {
+    const existingPage = JSON.parse(existing);
+    if (existingPage.agent_id !== agent.agent_id) {
+      return c.json({ ok: false, error: 'Slug already taken', ...(registration ? { _registration: registration } : {}) }, 409);
+    }
+  }
+
   // 检查额度
   const { allowed, record } = await incrementUsage(c.env.META, agent);
   if (!allowed) {
@@ -55,23 +90,16 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
     }, 402);
   }
 
-  // 生成 slug
-  const slug = customSlug || generateSlug();
-
-  // 检查 slug 是否已存在
-  const existing = await c.env.META.get(`page:${slug}`);
-  if (existing && !customSlug) {
-    return c.json({ ok: false, error: 'Slug collision, please retry' }, 409);
-  }
-  if (existing && customSlug) {
-    const existingPage = JSON.parse(existing);
-    if (existingPage.agent_id !== agent.agent_id) {
-      return c.json({ ok: false, error: 'Slug already taken' }, 409);
+  // 计算过期时间：免费版最长 14 天，最短 60 秒，防止 expires_in 被滥用做永久页
+  const MAX_TTL = 14 * 24 * 60 * 60;
+  let ttl = MAX_TTL;
+  if (expires_in !== undefined) {
+    const n = Number(expires_in);
+    if (!Number.isFinite(n) || n <= 0) {
+      return c.json({ ok: false, error: 'expires_in must be a positive number of seconds' }, 400);
     }
+    ttl = Math.min(Math.max(Math.floor(n), 60), MAX_TTL);
   }
-
-  // 计算过期时间
-  const ttl = expires_in || 14 * 24 * 60 * 60; // 默认 14 天
   const expires_at = new Date(Date.now() + ttl * 1000).toISOString();
 
   const finalHtml = injectWatermark(html, {
@@ -96,7 +124,7 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
     is_public: isPublic === true,
     views: 0,
   };
-  await c.env.META.put(`page:${slug}`, JSON.stringify(pageMeta));
+  await c.env.META.put(`page:${slug}`, JSON.stringify(pageMeta), { metadata: toPageMetaLite(pageMeta) });
 
   // 添加到 agent 的页面列表
   const agentPages = JSON.parse(await c.env.META.get(`pages:${agent.agent_id}`) || '[]');

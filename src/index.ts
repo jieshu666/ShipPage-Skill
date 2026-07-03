@@ -54,8 +54,29 @@ app.get('/', (c) => {
 // Health check
 app.get('/health', (c) => c.json({ ok: true, service: 'shippage' }));
 
-// 404
-app.notFound((c) => c.json({ ok: false, error: 'Not found' }, 404));
+// 404 — a branded HTML page for browsers (Accept: text/html), JSON for
+// everything else (API clients, curl, scripts — Accept: */* or application/json).
+app.notFound((c) => {
+  const path = c.req.path;
+  const wantsHtml = !path.startsWith('/v1/') && (c.req.header('Accept') || '').includes('text/html');
+  if (!wantsHtml) {
+    return c.json({ ok: false, error: 'Not found' }, 404);
+  }
+  const siteUrl = c.env.SITE_URL;
+  return c.html(`<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — ShipPage</title><meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;background:#0a0a0a;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}.box{max-width:440px;text-align:center}.code{font-family:'SF Mono',Consolas,monospace;font-size:13px;letter-spacing:.2em;color:#f97316;margin-bottom:16px}h1{font-size:26px;font-weight:800;margin-bottom:12px}p{color:#888;font-size:15px;line-height:1.6;margin-bottom:28px}a.cta{display:inline-block;background:#f97316;color:#fff;font-weight:600;font-size:14px;padding:11px 22px;border-radius:8px;text-decoration:none}a.cta:hover{background:#ea6a08}.links{margin-top:18px;font-size:13px}.links a{color:#666;text-decoration:none;margin:0 8px}.links a:hover{color:#999}</style>
+</head><body><div class="box">
+<div class="code">404 · PAGE NOT FOUND</div>
+<h1>Nothing here</h1>
+<p>That page doesn't exist. If you were looking for a published page, its link may have expired.</p>
+<a class="cta" href="${siteUrl}">Go to ShipPage →</a>
+<div class="links"><a href="${siteUrl}/docs">Docs</a><a href="${siteUrl}/templates">Templates</a><a href="${siteUrl}/blog">Blog</a></div>
+</div></body></html>`, 404);
+});
 
 // Export
 export default {
