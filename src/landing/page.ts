@@ -717,8 +717,13 @@ Content-Type: application/json
           <a href="/showcase">${t(lang, 'Showcase', '展示')}</a>
           <a href="/pricing">${t(lang, 'Pricing', '价格')}</a>
           <a href="/changelog">${t(lang, 'Changelog', '更新日志')}</a>
+          <a href="/about">${t(lang, 'About', '关于')}</a>
           <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank">GitHub</a>
-          <a href="/health">API Status</a>
+        </div>
+        <div class="footer-links" style="margin-top:8px;">
+          <a href="/terms">${t(lang, 'Terms', '服务条款')}</a>
+          <a href="/privacy">${t(lang, 'Privacy', '隐私政策')}</a>
+          <a href="https://github.com/jieshu666/ShipPage-Skill/issues" target="_blank">${t(lang, 'Contact', '联系我们')}</a>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { changelog } from '../content/changelog';
 import { listAllKeys, readPageMetas } from '../utils/kv';
 import { OG_PNG_BASE64 } from '../assets/og-image';
 import { DOC_SLUGS } from './docs';
+import { COMPARE_SLUGS } from './compare';
 
 const seo = new Hono<AppBindings>();
 
@@ -26,20 +27,25 @@ seo.get('/og.png', () => {
 const SITE_LASTMOD = '2026-07-03';
 
 seo.get('/robots.txt', (c) => {
-  // A single catch-all group. Named per-bot groups in robots.txt do NOT
-  // inherit the '*' rules — each bot only reads its own group — so the old
-  // per-bot blocks silently dropped every Disallow. One '*' group that allows
-  // crawling and blocks private/API paths applies to every crawler, including
-  // AI retrieval bots (GPTBot, ClaudeBot, OAI-SearchBot, PerplexityBot, etc.).
-  const body = `User-agent: *
-Allow: /
+  // Named per-bot groups in robots.txt do NOT inherit the '*' rules — each bot
+  // reads only its own group — so any named group must repeat the Disallow
+  // lines. We keep the '*' group as the real policy, then add explicit
+  // (identical) groups for the AI retrieval/training crawlers purely as a
+  // "you are welcome here" signal for GEO. The shared disallow block is
+  // duplicated into every group so none of them silently re-opens a private path.
+  const disallow = `Allow: /
 Disallow: /claim
 Disallow: /account
 Disallow: /auth
-Disallow: /v1/
-
-Sitemap: ${c.env.SITE_URL}/sitemap.xml
-`;
+Disallow: /v1/`;
+  const aiBots = [
+    'GPTBot', 'OAI-SearchBot', 'ChatGPT-User',
+    'ClaudeBot', 'Claude-SearchBot', 'Claude-User',
+    'PerplexityBot', 'Perplexity-User',
+    'Google-Extended', 'Bingbot', 'Applebot-Extended', 'CCBot',
+  ];
+  const groups = [`User-agent: *\n${disallow}`, ...aiBots.map((b) => `User-agent: ${b}\n${disallow}`)];
+  const body = `${groups.join('\n\n')}\n\nSitemap: ${c.env.SITE_URL}/sitemap.xml\n`;
   return new Response(body, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
   });
@@ -87,6 +93,15 @@ seo.get('/sitemap.xml', async (c) => {
   for (const slug of DOC_SLUGS) {
     if (!slug) continue; // hub already added above
     urls.push({ loc: `${base}/docs/${slug}`, changefreq: 'monthly', priority: '0.8', lastmod: SITE_LASTMOD });
+  }
+  // Comparison pages.
+  for (const slug of COMPARE_SLUGS) {
+    urls.push({ loc: `${base}/compare/${slug}`, changefreq: 'monthly', priority: '0.7', lastmod: SITE_LASTMOD });
+  }
+  // Trust / legal / about.
+  for (const p of ['about', 'pricing', 'terms', 'privacy']) {
+    if (p === 'pricing') continue; // already added above
+    urls.push({ loc: `${base}/${p}`, changefreq: 'yearly', priority: p === 'about' ? '0.6' : '0.3', lastmod: SITE_LASTMOD });
   }
 
   for (const p of posts) {
@@ -174,8 +189,14 @@ ShipPage turns any HTML or Markdown into a live webpage via a single POST reques
 - [Blog](${siteUrl}/blog)
 - [Templates](${siteUrl}/templates)
 - [Changelog](${siteUrl}/changelog)
+- [About](${siteUrl}/about)
 - [GitHub repository](https://github.com/jieshu666/ShipPage-Skill)
 - [npm package (shippage-mcp)](https://www.npmjs.com/package/shippage-mcp)
+
+## Comparisons
+
+- [ShipPage vs tiiny.host](${siteUrl}/compare/vs-tiiny-host): API-first agent publishing vs an upload-first web tool.
+- [ShipPage vs Claude/ChatGPT share links](${siteUrl}/compare/vs-artifact-sharing): hosting pages generated outside a chat app, with slug/password/expiry control.
 
 ## Blog posts
 
