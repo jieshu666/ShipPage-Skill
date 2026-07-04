@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { authMiddleware } from '../auth/verify';
+import { toPageMetaLite } from '../utils/kv';
 import type { AppBindings } from '../types';
 
 const pages = new Hono<AppBindings>();
@@ -80,15 +81,20 @@ pages.put('/v1/pages/:slug', authMiddleware(true), async (c) => {
     }
   }
 
-  if (body.expires_in) {
-    meta.expires_at = new Date(Date.now() + body.expires_in * 1000).toISOString();
+  if (body.expires_in !== undefined) {
+    const n = Number(body.expires_in);
+    if (!Number.isFinite(n) || n <= 0) {
+      return c.json({ ok: false, error: 'expires_in must be a positive number of seconds' }, 400);
+    }
+    const ttl = Math.min(Math.max(Math.floor(n), 60), 14 * 24 * 60 * 60);
+    meta.expires_at = new Date(Date.now() + ttl * 1000).toISOString();
   }
 
   if (body.title) {
     meta.title = body.title;
   }
 
-  await c.env.META.put(`page:${slug}`, JSON.stringify(meta));
+  await c.env.META.put(`page:${slug}`, JSON.stringify(meta), { metadata: toPageMetaLite(meta) });
 
   return c.json({
     ok: true,

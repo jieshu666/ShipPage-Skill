@@ -115,7 +115,7 @@ DELETE /v1/pages/{slug}       # delete a page</code></pre>
   <li>Install the skill: <code>clawhub install shippage</code></li>
   <li>Browse real published pages: <a href="/showcase">shippage.ai/showcase</a></li>
   <li>Copy a template to start: <a href="/templates">shippage.ai/templates</a></li>
-  <li>Read the API docs: <a href="/">shippage.ai</a></li>
+  <li>Read the API docs: <a href="/docs">shippage.ai/docs</a></li>
 </ul>
 
 <p>ShipPage is MIT-licensed and open source at <a href="https://github.com/jieshu666/ShipPage-Skill" rel="noopener">github.com/jieshu666/ShipPage-Skill</a>.</p>

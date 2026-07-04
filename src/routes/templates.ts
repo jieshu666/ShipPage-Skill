@@ -49,7 +49,7 @@ function renderIndex(siteUrl: string, plausibleDomain?: string): string {
   <meta property="og:title" content="ShipPage Templates — copy-paste HTML for AI agents">
   <meta property="og:description" content="5 ready-to-publish templates your AI agent can use today.">
   <meta property="og:url" content="${siteUrl}/templates">
-  <meta property="og:image" content="${siteUrl}/og.svg">
+  <meta property="og:image" content="${siteUrl}/og.png">
   <meta name="twitter:card" content="summary_large_image">
   ${plausibleScript}
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
@@ -151,7 +151,7 @@ JSON`;
   <meta property="og:title" content="${escapeHtml(t.title)} — ShipPage Template">
   <meta property="og:description" content="${escapeHtml(t.description)}">
   <meta property="og:url" content="${siteUrl}/templates/${t.slug}">
-  <meta property="og:image" content="${siteUrl}/og.svg">
+  <meta property="og:image" content="${siteUrl}/og.png">
   <meta name="twitter:card" content="summary_large_image">
   ${plausibleScript}
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>

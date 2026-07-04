@@ -9,38 +9,70 @@ export function generateLandingPage(lang: Lang = 'en', plausibleDomain?: string)
   const plausibleScript = plausibleDomain
     ? `<script defer data-domain="${plausibleDomain}" src="https://plausible.io/js/script.outbound-links.js"></script>`
     : '';
+  // Demo response shows a real "14 days from now" expiry instead of a hardcoded
+  // past date (a past-dated demo reads as abandoned).
+  const demoExpiry = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('.')[0] + 'Z';
 
   return `<!DOCTYPE html>
 <html lang="${htmlLang}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShipPage — Instant HTML Publishing for AI Agents | Zero Config</title>
+  <title>${t(lang, 'ShipPage — Instant HTML Publishing for AI Agents | Zero Config', 'ShipPage — AI 智能体的即时网页发布服务 | 零配置')}</title>
   ${plausibleScript}
-  <meta name="description" content="Publish HTML to a public URL in seconds. Zero config, zero registration. Install the OpenClaw Skill or MCP Server and your AI agent can publish web pages instantly. Free tier: 20 publishes/month.">
-  <meta name="keywords" content="HTML publishing, AI agent, MCP server, OpenClaw, Claude, Cursor, web publishing, zero config, instant deploy">
+  <meta name="description" content="${t(lang, 'Publish HTML to a public URL in seconds. Zero config, zero registration. Install the OpenClaw Skill or MCP Server and your AI agent can publish web pages instantly. Free tier: 20 publishes/month.', '一次 API 调用，把 HTML 或 Markdown 发布成公开网页。零配置、零注册，AI 智能体首次调用即自动注册。安装 OpenClaw 技能或 MCP Server 即可让智能体秒发网页。免费额度：每月 20 次发布。')}">
   <meta name="robots" content="index,follow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="alternate" type="application/rss+xml" title="ShipPage Blog" href="https://shippage.ai/blog/rss.xml">
   <link rel="canonical" href="https://shippage.ai${lang === 'zh' ? '/?lang=zh' : '/'}">
   <link rel="alternate" hreflang="en" href="https://shippage.ai/">
   <link rel="alternate" hreflang="zh-CN" href="https://shippage.ai/?lang=zh">
   <link rel="alternate" hreflang="x-default" href="https://shippage.ai/">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="ShipPage — HTML in. URL out. Zero config.">
-  <meta property="og:description" content="Instant HTML publishing for AI agents. No registration. No config. Install and go. Free tier: 20 publishes/month.">
+  <meta property="og:title" content="${t(lang, 'ShipPage — HTML in. URL out. Zero config.', 'ShipPage — HTML 进，URL 出。零配置。')}">
+  <meta property="og:description" content="${t(lang, 'Instant HTML publishing for AI agents. No registration. No config. Install and go. Free tier: 20 publishes/month.', 'AI 智能体的即时网页发布。零注册、零配置，装完即用。免费额度：每月 20 次发布。')}">
   <meta property="og:url" content="https://shippage.ai${lang === 'zh' ? '/?lang=zh' : '/'}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ShipPage">
-  <meta property="og:image" content="https://shippage.ai/og.svg">
+  <meta property="og:image" content="https://shippage.ai/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:locale" content="${lang === 'zh' ? 'zh_CN' : 'en_US'}">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ShipPage — HTML in. URL out. Zero config.">
-  <meta name="twitter:description" content="Instant HTML publishing for AI agents. No registration. No config. Install and go.">
-  <meta name="twitter:image" content="https://shippage.ai/og.svg">
+  <meta name="twitter:title" content="${t(lang, 'ShipPage — HTML in. URL out. Zero config.', 'ShipPage — HTML 进，URL 出。零配置。')}">
+  <meta name="twitter:description" content="${t(lang, 'Instant HTML publishing for AI agents. No registration. No config. Install and go.', 'AI 智能体的即时网页发布。零注册、零配置，装完即用。')}">
+  <meta name="twitter:image" content="https://shippage.ai/og.png">
+
+  <!-- JSON-LD: Organization + WebSite (entity + sameAs for GEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://shippage.ai/#org",
+        "name": "ShipPage",
+        "url": "https://shippage.ai",
+        "logo": "https://shippage.ai/favicon.svg",
+        "sameAs": [
+          "https://github.com/jieshu666/ShipPage-Skill",
+          "https://www.npmjs.com/package/shippage-mcp"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://shippage.ai/#website",
+        "name": "ShipPage",
+        "url": "https://shippage.ai",
+        "publisher": { "@id": "https://shippage.ai/#org" },
+        "inLanguage": ["en", "zh-CN"]
+      }
+    ]
+  }
+  </script>
 
   <!-- JSON-LD: SoftwareApplication -->
   <script type="application/ld+json">
@@ -257,9 +289,12 @@ export function generateLandingPage(lang: Lang = 'en', plausibleDomain?: string)
     .lang-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; text-decoration: none; }
     .lang-btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
     #hero { padding: 120px 0 80px; text-align: center; }
+    #hero .hero-kicker { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 13px; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 18px; }
     #hero h1 { font-size: 52px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 20px; }
     #hero h1 span { color: var(--accent); }
-    #hero .hero-desc { font-size: 18px; color: var(--text-muted); max-width: 560px; margin: 0 auto 36px; line-height: 1.7; }
+    #hero .hero-desc { font-size: 18px; color: var(--text-muted); max-width: 580px; margin: 0 auto 28px; line-height: 1.7; }
+    #hero .hero-curl { max-width: 620px; margin: 0 auto 28px; background: var(--code-bg, #141414); border: 1px solid var(--border, #222); border-radius: 10px; padding: 16px 18px; text-align: left; overflow-x: auto; }
+    #hero .hero-curl code { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 13px; color: var(--text-muted); white-space: pre; line-height: 1.6; }
     .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
     .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
     .btn-primary { background: var(--accent); color: #fff; }
@@ -345,10 +380,11 @@ export function generateLandingPage(lang: Lang = 'en', plausibleDomain?: string)
     <div class="wrap">
       <a href="/" class="nav-logo">Ship<span>Page</span></a>
       <div class="nav-links">
-        <a href="/blog">${t(lang, 'Blog', '博客')}</a>
+        <a href="/docs">${t(lang, 'Docs', '文档')}</a>
         <a href="/templates">${t(lang, 'Templates', '模板')}</a>
         <a href="/showcase">${t(lang, 'Showcase', '展示')}</a>
-        <a href="${lang === 'zh' ? '?lang=zh' : '/'}#install">${t(lang, 'Install', '安装')}</a>
+        <a href="/blog">${t(lang, 'Blog', '博客')}</a>
+        <a href="/pricing">${t(lang, 'Pricing', '价格')}</a>
         <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank">GitHub</a>
         <a href="?lang=${otherLang}" class="lang-btn">${otherLabel}</a>
       </div>
@@ -358,16 +394,19 @@ export function generateLandingPage(lang: Lang = 'en', plausibleDomain?: string)
   <main>
     <section id="hero">
       <div class="wrap">
-        <h1>HTML in. <span>URL out.</span><br>${t(lang, 'Zero config.', '零配置。')}</h1>
+        <div class="hero-kicker">${t(lang, 'HTML in. URL out. Zero config.', 'HTML 进，URL 出。零配置。')}</div>
+        <h1>${t(lang, 'The publishing API<br>for <span>AI agents</span>', 'AI Agent 的<br><span>发布 API</span>')}</h1>
         <p class="hero-desc">${t(lang,
-          'ShipPage is an instant publishing service for AI agents. Your agent sends HTML, gets back a public URL. No registration, no API keys to configure — it just works on the first call.',
-          'ShipPage 是为 AI Agent 打造的即时发布服务。你的 Agent 发送 HTML，即刻获得一个公网 URL。无需注册，无需配置 API Key —— 首次调用即刻生效。'
+          'One POST, one public URL. Your agent sends HTML or Markdown — ShipPage returns a live link that opens on any device. No account, no API keys, no build step. It works on the very first call.',
+          '一次 POST，一个公网 URL。你的 Agent 发送 HTML 或 Markdown，ShipPage 立刻返回一个任何设备都能打开的链接。无需账号、无需 API Key、无需构建，首次调用即刻生效。'
         )}</p>
+        <div class="hero-curl"><code>curl -X POST https://shippage.ai/v1/publish \\
+  -d '{"html":"&lt;h1&gt;Hi from my agent&lt;/h1&gt;"}'</code></div>
         <div class="hero-ctas">
-          <a href="#install" class="btn btn-primary">${t(lang, 'Install Skill', '安装 Skill')}</a>
-          <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank" class="btn btn-secondary">${t(lang, 'View on GitHub', '查看源码')}</a>
+          <a href="/docs" class="btn btn-primary">${t(lang, 'Read the docs', '阅读文档')}</a>
+          <a href="#install" class="btn btn-secondary">${t(lang, 'Install the skill', '安装 Skill')}</a>
         </div>
-        <p class="hero-trust">${t(lang, 'Free · 20 publishes/month · No credit card required', '免费 · 每月 20 次发布 · 无需信用卡')}</p>
+        <p class="hero-trust">${t(lang, 'Free · 20 publishes/month · works with Claude Code, Claude Desktop, Cursor & any HTTP client', '免费 · 每月 20 次发布 · 支持 Claude Code、Claude Desktop、Cursor 及任意 HTTP 客户端')}</p>
       </div>
     </section>
 
@@ -436,7 +475,7 @@ Content-Type: application/json
   <span class="s-key">"ok"</span>: <span class="s-bool">true</span>,
   <span class="s-key">"url"</span>: <span class="s-str">"https://shippage.ai/p/x7k2m9"</span>,
   <span class="s-key">"slug"</span>: <span class="s-str">"x7k2m9"</span>,
-  <span class="s-key">"expires_at"</span>: <span class="s-str">"2026-04-05T14:30:00Z"</span>,
+  <span class="s-key">"expires_at"</span>: <span class="s-str">"${demoExpiry}"</span>,
   <span class="s-key">"_registration"</span>: {
     <span class="s-key">"api_key"</span>: <span class="s-str">"sk_..."</span>,
     <span class="s-key">"claim_url"</span>: <span class="s-str">"https://shippage.ai/claim/ABCD-1234"</span>
@@ -644,22 +683,21 @@ Content-Type: application/json
             <a href="#install" class="btn btn-primary" style="width:100%;justify-content:center;">${t(lang, 'Get Started Free', '免费开始')}</a>
           </div>
           <div class="price-card featured">
-            <div class="price-badge">Coming Soon</div>
+            <div class="price-badge">${t(lang, 'Early access', '抢先体验')}</div>
             <h3>Pro</h3>
-            <p style="color:var(--text-muted);font-size:14px;">${t(lang, 'For power users', '高级用户')}</p>
-            <div class="price-amount" style="font-size:24px;margin:20px 0 8px;">Pricing TBD</div>
+            <p style="color:var(--text-muted);font-size:14px;">${t(lang, 'In development — help shape it', '开发中 —— 帮我们打磨')}</p>
+            <div class="price-amount" style="font-size:22px;margin:20px 0 8px;">${t(lang, 'Free while in beta', '公测期间免费')}</div>
             <ul>
-              <li>${t(lang, 'Unlimited publishes', '无限次发布')}</li>
-              <li>${t(lang, 'Permanent retention', '永久保留')}</li>
-              <li>${t(lang, '5MB per page', '每页 5MB')}</li>
+              <li>${t(lang, 'Permanent pages (no expiry)', '永久页面（不过期）')}</li>
+              <li>${t(lang, 'Larger pages & higher limits', '更大页面与更高额度')}</li>
               <li>${t(lang, 'Custom domains', '自定义域名')}</li>
-              <li>${t(lang, 'No watermark', '无水印')}</li>
-              <li>${t(lang, 'Priority support', '优先支持')}</li>
+              <li>${t(lang, 'Remove the ShipPage badge', '去除 ShipPage 水印')}</li>
+              <li>${t(lang, 'Page view analytics', '页面访问统计')}</li>
             </ul>
             <form id="waitlist-form" style="margin-top:8px;">
               <input type="email" name="email" placeholder="your@email.com" required
                 style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border-light);border-radius:6px;color:var(--text);font-size:14px;outline:none;margin-bottom:8px;font-family:var(--font);">
-              <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Join Waitlist</button>
+              <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">${t(lang, 'Get early access', '获取抢先体验')}</button>
             </form>
             <p id="waitlist-msg" style="display:none;text-align:center;font-size:13px;margin-top:8px;"></p>
           </div>
@@ -673,9 +711,11 @@ Content-Type: application/json
       <div class="footer-inner">
         <span class="footer-copy">© 2026 ShipPage · ${t(lang, 'Built on Cloudflare Workers', '基于 Cloudflare Workers 构建')}</span>
         <div class="footer-links">
+          <a href="/docs">${t(lang, 'Docs', '文档')}</a>
           <a href="/blog">${t(lang, 'Blog', '博客')}</a>
           <a href="/templates">${t(lang, 'Templates', '模板')}</a>
           <a href="/showcase">${t(lang, 'Showcase', '展示')}</a>
+          <a href="/pricing">${t(lang, 'Pricing', '价格')}</a>
           <a href="/changelog">${t(lang, 'Changelog', '更新日志')}</a>
           <a href="https://github.com/jieshu666/ShipPage-Skill" target="_blank">GitHub</a>
           <a href="/health">API Status</a>

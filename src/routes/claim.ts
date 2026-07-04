@@ -1,7 +1,14 @@
 import { Hono } from 'hono';
 import type { AppBindings, AgentRecord, UserRecord } from '../types';
+import { escapeHtml } from '../utils/escape';
 
 const claim = new Hono<AppBindings>();
+
+// GET /claim — 无 code 的裸访问：提供一个输入 claim code 的表单
+// （首页的 "Claim My Pages" CTA 指向这里；此前返回裸 JSON 404）
+claim.get('/claim', (c) => {
+  return c.html(renderClaimEntry(c.env.SITE_URL));
+});
 
 // 辅助：通过 claim code 获取 agent 信息
 async function getAgentByClaimCode(env: any, code: string) {
@@ -216,22 +223,22 @@ function renderClaimPage(
     const expires = new Date(p.expires_at);
     const isExpired = expires < new Date();
     const pwdDisplay = p.password_protected
-      ? `<span style="color:#4ade80;">🔒</span> <code class="pwd-text" style="cursor:pointer;user-select:all;">${p.password || '***'}</code>`
+      ? `<span style="color:#4ade80;">🔒</span> <code class="pwd-text" style="cursor:pointer;user-select:all;">${escapeHtml(p.password || '***')}</code>`
       : '<span style="color:#555;">Off</span>';
-    return `<tr data-slug="${p.slug}">
-      <td><a href="${p.url}" target="_blank" style="color:#f97316;">${p.title}</a></td>
-      <td><code>${p.slug}</code></td>
+    return `<tr data-slug="${escapeHtml(p.slug)}">
+      <td><a href="${escapeHtml(p.url)}" target="_blank" style="color:#f97316;">${escapeHtml(p.title)}</a></td>
+      <td><code>${escapeHtml(p.slug)}</code></td>
       <td>${p.views}</td>
       <td class="pwd-cell">${pwdDisplay}</td>
       <td style="color:${isExpired ? '#ef4444' : '#4ade80'};">${isExpired ? 'Expired' : expires.toLocaleDateString()}</td>
       <td class="actions">
-        <button class="act-btn pwd-btn" data-slug="${p.slug}" data-has-pwd="${p.password_protected}">${p.password_protected ? 'Remove 🔒' : 'Set 🔒'}</button>
-        <button class="act-btn del-btn" data-slug="${p.slug}" data-title="${p.title}">Delete</button>
+        <button class="act-btn pwd-btn" data-slug="${escapeHtml(p.slug)}" data-has-pwd="${p.password_protected}">${p.password_protected ? 'Remove 🔒' : 'Set 🔒'}</button>
+        <button class="act-btn del-btn" data-slug="${escapeHtml(p.slug)}" data-title="${escapeHtml(p.title)}">Delete</button>
       </td>
     </tr>`;
   }).join('') : '';
 
-  const displayName = data?.display_name || data?.agent_id || '';
+  const displayName = escapeHtml(data?.display_name || data?.agent_id || '');
   const linkBanner = mode === 'link_prompt' ? `
     <div class="link-banner">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -286,16 +293,16 @@ function renderShell(siteUrl: string, title: string, user: UserRecord | null, bo
   const userDropdown = user ? `
     <div class="user-menu" id="user-menu">
       <button class="user-btn" id="user-btn">
-        <img src="${user.picture}" alt="" class="avatar" referrerpolicy="no-referrer">
-        <span class="user-name">${user.name}</span>
+        <img src="${escapeHtml(user.picture)}" alt="" class="avatar" referrerpolicy="no-referrer">
+        <span class="user-name">${escapeHtml(user.name)}</span>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="#888"><path d="M2.5 4.5l3.5 3.5 3.5-3.5"/></svg>
       </button>
       <div class="dropdown" id="dropdown">
         <div class="dd-header">
-          <img src="${user.picture}" alt="" class="avatar-lg" referrerpolicy="no-referrer">
+          <img src="${escapeHtml(user.picture)}" alt="" class="avatar-lg" referrerpolicy="no-referrer">
           <div>
-            <div style="font-weight:600;">${user.name}</div>
-            <div style="color:#888;font-size:12px;">${user.email}</div>
+            <div style="font-weight:600;">${escapeHtml(user.name)}</div>
+            <div style="color:#888;font-size:12px;">${escapeHtml(user.email)}</div>
           </div>
         </div>
         <div class="dd-sep"></div>
@@ -495,6 +502,61 @@ function renderShell(siteUrl: string, title: string, user: UserRecord | null, bo
         }
         btn.disabled = false;
       });
+    });
+  </script>
+</body>
+</html>`;
+}
+
+function renderClaimEntry(siteUrl: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claim your pages — ShipPage</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{min-height:100vh;background:#0a0a0a;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
+    .box{width:100%;max-width:400px;text-align:center}
+    a.brand{font-size:18px;font-weight:700;color:#f0f0f0;text-decoration:none;display:inline-block;margin-bottom:32px}
+    a.brand span{color:#f97316}
+    h1{font-size:24px;font-weight:800;margin-bottom:10px}
+    p{color:#888;font-size:14px;line-height:1.6;margin-bottom:24px}
+    form{display:flex;flex-direction:column;gap:12px}
+    input{background:#141414;border:1px solid #333;color:#f0f0f0;padding:13px 16px;border-radius:8px;font-size:15px;font-family:'SF Mono',Consolas,monospace;text-align:center;letter-spacing:.12em;text-transform:uppercase}
+    input:focus{outline:none;border-color:#f97316}
+    button{background:#f97316;color:#fff;font-weight:600;font-size:15px;padding:13px;border:none;border-radius:8px;cursor:pointer}
+    button:hover{background:#ea6a08}
+    .hint{color:#555;font-size:12px;margin-top:20px;line-height:1.6}
+    .err{color:#ef4444;font-size:13px;min-height:18px;margin-top:4px}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <a href="${siteUrl}" class="brand">Ship<span>Page</span></a>
+    <h1>Claim your pages</h1>
+    <p>Enter the claim code your agent returned (looks like <code>REEF-4X7K</code>) to manage, protect, or delete your published pages.</p>
+    <form id="claim-form">
+      <input id="code" name="code" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" required>
+      <button type="submit">Open my pages →</button>
+      <div class="err" id="err"></div>
+    </form>
+    <p class="hint">Don't have a code? Publish a page first — your agent gets one automatically.<br>The code is printed in the publish response as <code>claim_url</code>.</p>
+  </div>
+  <script>
+    var form = document.getElementById('claim-form');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var raw = document.getElementById('code').value.trim().toUpperCase();
+      if(!/^[A-Z0-9]{4}-?[A-Z0-9]{4}$/.test(raw)){
+        document.getElementById('err').textContent = 'Enter a code like REEF-4X7K';
+        return;
+      }
+      var code = raw.length === 8 ? raw.slice(0,4)+'-'+raw.slice(4) : raw;
+      window.location.href = '/claim/' + encodeURIComponent(code);
     });
   </script>
 </body>

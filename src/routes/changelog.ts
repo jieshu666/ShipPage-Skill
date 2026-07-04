@@ -80,7 +80,7 @@ function renderPage(siteUrl: string, plausibleDomain?: string): string {
   <meta property="og:title" content="ShipPage Changelog">
   <meta property="og:description" content="Release notes for ShipPage.">
   <meta property="og:url" content="${siteUrl}/changelog">
-  <meta property="og:image" content="${siteUrl}/og.svg">
+  <meta property="og:image" content="${siteUrl}/og.png">
   <meta name="twitter:card" content="summary_large_image">
   ${plausibleScript}
   <script type="application/ld+json">${JSON.stringify(jsonLdBlog)}</script>

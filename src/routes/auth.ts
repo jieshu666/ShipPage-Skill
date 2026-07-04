@@ -6,9 +6,18 @@ import type { AppBindings, UserRecord, AgentRecord } from '../types';
 
 const auth = new Hono<AppBindings>();
 
+// Only allow same-origin relative redirect targets (a single leading slash,
+// not "//host" or an absolute URL). Prevents /auth/google?redirect=https://evil
+// from bouncing an authenticated user off-site.
+function safeRedirect(target: string | undefined | null): string {
+  if (!target || typeof target !== 'string') return '/';
+  if (!target.startsWith('/') || target.startsWith('//') || target.startsWith('/\\')) return '/';
+  return target;
+}
+
 // GET /auth/google — 跳转 Google OAuth
 auth.get('/auth/google', async (c) => {
-  const redirect = c.req.query('redirect') || '/';
+  const redirect = safeRedirect(c.req.query('redirect'));
   const linkAgent = c.req.query('link_agent') || '';
 
   const state = nanoid(32);
@@ -110,9 +119,10 @@ auth.get('/auth/google/callback', async (c) => {
 
   // 设置 session cookie
   const cookie = await setSessionCookie(googleUser.sub, c.env.SESSION_SECRET);
+  const safeTarget = safeRedirect(stateData.redirect);
   const redirectTo = linkError
-    ? `${stateData.redirect}?link_error=${encodeURIComponent(linkError)}`
-    : stateData.redirect || '/';
+    ? `${safeTarget}?link_error=${encodeURIComponent(linkError)}`
+    : safeTarget;
 
   return new Response(null, {
     status: 302,
@@ -125,7 +135,7 @@ auth.get('/auth/google/callback', async (c) => {
 
 // GET /auth/logout — 退出登录
 auth.get('/auth/logout', (c) => {
-  const redirect = c.req.query('redirect') || '/';
+  const redirect = safeRedirect(c.req.query('redirect'));
   return new Response(null, {
     status: 302,
     headers: {

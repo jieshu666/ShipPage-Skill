@@ -62,3 +62,20 @@ export async function setSessionCookie(googleId: string, secret: string): Promis
 export function clearSessionCookie(): string {
   return `${SESSION_COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
+
+// Generic HMAC sign/verify for short opaque tokens (e.g. per-page password
+// grants). Returns a base64url signature of `value`.
+export async function signValue(value: string, secret: string): Promise<string> {
+  const key = await getKey(secret);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)));
+  return base64urlEncode(sig);
+}
+
+export async function verifyValue(value: string, sig: string, secret: string): Promise<boolean> {
+  try {
+    const key = await getKey(secret);
+    return await crypto.subtle.verify('HMAC', key, base64urlDecode(sig), new TextEncoder().encode(value));
+  } catch {
+    return false;
+  }
+}
