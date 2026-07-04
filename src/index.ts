@@ -15,6 +15,8 @@ import blog from './routes/blog';
 import changelog from './routes/changelog';
 import docs from './routes/docs';
 import pricing from './routes/pricing';
+import legal from './routes/legal';
+import compare from './routes/compare';
 import { sessionMiddleware } from './middleware/session';
 import { handleCron } from './cron/cleanup';
 import { generateLandingPage } from './landing/page';
@@ -48,6 +50,8 @@ app.route('/', blog);
 app.route('/', changelog);
 app.route('/', docs);
 app.route('/', pricing);
+app.route('/', legal);
+app.route('/', compare);
 
 // 落地页
 app.get('/', (c) => {

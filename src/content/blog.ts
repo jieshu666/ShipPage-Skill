@@ -243,7 +243,34 @@ const POST_VS_VERCEL: BlogPost = {
   `.trim(),
 };
 
-export const posts: BlogPost[] = [POST_HOW_TO_PUBLISH_FROM_CLAUDE, POST_VS_VERCEL];
+const POST_AGENT_DELIVERABLES: BlogPost = {
+  slug: 'where-do-ai-agents-put-what-they-make',
+  title: 'Your agent can generate a web page. Where does it put it?',
+  description: 'AI agents got great at generating HTML. Delivery is the missing half. A look at why "the last mile" — turning agent output into a real, shareable URL — is the part still worth solving.',
+  publishedAt: '2026-07-04',
+  author: 'ShipPage',
+  tags: ['agents', 'mcp', 'delivery', 'claude-code'],
+  readingTime: 4,
+  html: `
+<p class="lead">Everyone is talking about what agents can <em>generate</em>. Almost no one is talking about where that output goes. That gap — the last mile between "the agent made a page" and "a human opened it" — is the part still worth solving.</p>
+
+<p>Watch how people actually use coding agents today. You ask Claude Code for a status report, a data dashboard, a quick landing page. It writes clean HTML in seconds. And then... it sits in your terminal. You can't open it on your phone. You can't send it to a teammate without screenshotting it, which throws away every chart and link. Generation got cheap; delivery didn't.</p>
+
+<h2 id="platforms">Doesn't the platform already share it?</h2>
+<p>Sometimes. If you're inside the Claude or ChatGPT app, their built-in sharing works well. But a large and growing share of agent work happens <strong>outside</strong> a chat window — Claude Code in a terminal, a scheduled job, a CI step, an OpenClaw or custom-framework agent. None of those have a "share" button. And even when there is one, a <code>claude.ai</code> or <code>chatgpt.com</code> link reads like homework when you send it to a client. A deliverable needs its own address.</p>
+
+<h2 id="last-mile">The last mile is a product, not a footnote</h2>
+<p>The useful framing: an agent's output isn't done when it's generated — it's done when it's <em>delivered</em>. That means a real URL that opens anywhere, that you can put a password on, give a readable slug, set to expire or keep, and hand to a person without apology. Turning that into one API call an agent can make on its own is the whole point of <a href="/">ShipPage</a>.</p>
+
+<h2 id="try">One call</h2>
+<p>Any agent that can make an HTTP request can publish:</p>
+<pre><code>curl -X POST https://shippage.ai/v1/publish \\
+  -d '{"html":"&lt;h1&gt;Hello from my agent&lt;/h1&gt;"}'</code></pre>
+<p>You get back a public URL. No account, no keys, no build step — it auto-registers on the first call. From Claude Code, just say "publish this page." See the <a href="/docs/quickstart">quickstart</a>, or how it compares to <a href="/compare/vs-artifact-sharing">in-app share links</a>.</p>
+  `.trim(),
+};
+
+export const posts: BlogPost[] = [POST_AGENT_DELIVERABLES, POST_HOW_TO_PUBLISH_FROM_CLAUDE, POST_VS_VERCEL];
 
 export function findPost(slug: string): BlogPost | undefined {
   return posts.find((p) => p.slug === slug);
