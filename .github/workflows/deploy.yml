@@ -4,7 +4,8 @@ name: Deploy
 # Requires one repository secret: CLOUDFLARE_API_TOKEN
 #   (Cloudflare dashboard → My Profile → API Tokens → "Edit Cloudflare Workers"
 #    template → scoped to the shippage.ai account/zone).
-# Once the secret is set, production can never silently drift from main again.
+# Until that secret is set, the deploy step is skipped (not failed), so the
+# Actions tab stays clean. Once set, production can never silently drift from main.
 
 on:
   push:
@@ -15,6 +16,8 @@ jobs:
   deploy:
     name: wrangler deploy
     runs-on: ubuntu-latest
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,7 +26,11 @@ jobs:
       - run: npm ci
       - name: Type-check
         run: npx tsc --noEmit
+      - name: Skip notice (no token yet)
+        if: env.CF_TOKEN == ''
+        run: echo "CLOUDFLARE_API_TOKEN not set — skipping deploy. Set the repo secret to enable auto-deploy."
       - name: Deploy to Cloudflare Workers
+        if: env.CF_TOKEN != ''
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
