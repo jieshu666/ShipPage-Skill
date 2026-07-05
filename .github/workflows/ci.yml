@@ -17,6 +17,8 @@ jobs:
       - run: npm ci
       - name: Type-check (src/)
         run: npx tsc --noEmit
+      - name: Unit tests
+        run: npm test
       - name: Type-check MCP package
         working-directory: shippage-mcp
         run: |
