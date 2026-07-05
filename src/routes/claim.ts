@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { AppBindings, AgentRecord, UserRecord } from '../types';
 import { escapeHtml } from '../utils/escape';
+import { sha256Hex } from '../utils/crypto';
 
 const claim = new Hono<AppBindings>();
 
@@ -150,11 +151,7 @@ claim.post('/claim/:code/password', async (c) => {
     const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
     const password = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    meta.password_hash = hashArray.map((b: number) => b.toString(16).padStart(2, '0')).join('');
+    meta.password_hash = await sha256Hex(password);
     meta.password_protected = true;
     await c.env.META.put(`pwd:${slug}`, password);
     await c.env.META.put(`page:${slug}`, JSON.stringify(meta));

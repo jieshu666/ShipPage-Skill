@@ -2,6 +2,22 @@ import { describe, it, expect } from 'vitest';
 import { escapeHtml } from '../src/utils/escape';
 import { toPageMetaLite, readPageMetas } from '../src/utils/kv';
 import { signValue, verifyValue } from '../src/auth/session';
+import { sha256Hex } from '../src/utils/crypto';
+
+describe('sha256Hex', () => {
+  it('matches the known SHA-256 of "abc"', async () => {
+    expect(await sha256Hex('abc')).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+  });
+  it('hashes the empty string to the known digest', async () => {
+    expect(await sha256Hex('')).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+  });
+  it('is deterministic and produces 64 hex chars', async () => {
+    const a = await sha256Hex('hunter2');
+    const b = await sha256Hex('hunter2');
+    expect(a).toBe(b);
+    expect(a).toMatch(/^[0-9a-f]{64}$/);
+  });
+});
 
 describe('escapeHtml', () => {
   it('escapes the five HTML-significant characters', () => {

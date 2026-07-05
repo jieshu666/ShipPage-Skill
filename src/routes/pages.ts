@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { authMiddleware } from '../auth/verify';
 import { toPageMetaLite } from '../utils/kv';
 import { clampTtl } from '../utils/validate';
+import { sha256Hex } from '../utils/crypto';
 import type { AppBindings } from '../types';
 
 const pages = new Hono<AppBindings>();
@@ -70,11 +71,7 @@ pages.put('/v1/pages/:slug', authMiddleware(true), async (c) => {
 
   if (body.password !== undefined) {
     if (body.password) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(body.password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      meta.password_hash = hashArray.map((b: number) => b.toString(16).padStart(2, '0')).join('');
+      meta.password_hash = await sha256Hex(body.password);
       meta.password_protected = true;
     } else {
       meta.password_hash = null;

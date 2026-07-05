@@ -3,6 +3,7 @@ import { getCookie } from 'hono/cookie';
 import { generatePasswordPage } from '../utils/password';
 import { signValue, verifyValue } from '../auth/session';
 import { escapeHtml } from '../utils/escape';
+import { sha256Hex } from '../utils/crypto';
 import type { AppBindings } from '../types';
 
 const serve = new Hono<AppBindings>();
@@ -85,7 +86,7 @@ serve.post('/p/:slug/verify', async (c) => {
   if (!metaStr) return c.json({ ok: false }, 404);
 
   const meta = JSON.parse(metaStr);
-  const inputHash = await hashPassword(password);
+  const inputHash = await sha256Hex(password);
 
   if (!meta.password_hash || !timingSafeEqual(inputHash, meta.password_hash)) {
     return c.html(generatePasswordPage(slug, c.env.SITE_URL, 'Incorrect password'), 401);
@@ -101,14 +102,6 @@ serve.post('/p/:slug/verify', async (c) => {
     },
   });
 });
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
 
 // Constant-time comparison of two equal-length hex strings.
 function timingSafeEqual(a: string, b: string): boolean {
