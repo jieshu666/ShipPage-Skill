@@ -26,6 +26,14 @@ export function injectWatermark(html: string, siteUrlOrOpts: string | InjectOpti
 
   const headInjection = `<meta name="robots" content="${robots}"><meta name="generator" content="ShipPage"><link rel="canonical" href="${pageUrl}">${webPageJsonLd}`;
 
+  // Idempotency guard: if this HTML was already processed by ShipPage (e.g. an
+  // update re-publishing already-watermarked content), don't inject a second
+  // robots/canonical/badge — a duplicate or conflicting robots meta could
+  // undermine the noindex guarantee for private pages.
+  if (/<meta\s+name=["']generator["']\s+content=["']ShipPage["']/i.test(html)) {
+    return html;
+  }
+
   const footerBadge = `
 <div style="text-align:center;padding:12px 0 8px;font-family:-apple-system,sans-serif;font-size:11px;color:#999;border-top:1px solid #eee;margin-top:40px;">
   <a href="${siteUrl}?ref=badge" target="_blank" rel="noopener" style="color:#999;text-decoration:none;">Made with <strong style="color:#f97316;">ShipPage</strong> · HTML in. URL out.</a>
