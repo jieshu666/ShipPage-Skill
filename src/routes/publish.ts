@@ -5,6 +5,7 @@ import { injectWatermark } from '../utils/watermark';
 import { authMiddleware } from '../auth/verify';
 import { toPageMetaLite } from '../utils/kv';
 import { isValidSlug, isReservedSlug, clampTtl } from '../utils/validate';
+import { sha256Hex } from '../utils/crypto';
 import type { AppBindings } from '../types';
 
 const publish = new Hono<AppBindings>();
@@ -108,7 +109,7 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
     created_at: new Date().toISOString(),
     expires_at,
     password_protected: !!password,
-    password_hash: password ? await hashPassword(password) : null,
+    password_hash: password ? await sha256Hex(password) : null,
     is_public: isPublic === true,
     views: 0,
   };
@@ -145,14 +146,5 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
 
   return c.json(response, registration ? 201 : 200);
 });
-
-// 简单的密码 hash（用 Web Crypto API）
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
 
 export default publish;
