@@ -2,18 +2,10 @@ import { Hono } from 'hono';
 import { nanoid } from 'nanoid';
 import { getGoogleAuthUrl, exchangeCodeForTokens, getGoogleUserInfo } from '../auth/google-oauth';
 import { setSessionCookie, clearSessionCookie } from '../auth/session';
+import { safeRedirectPath as safeRedirect } from '../utils/validate';
 import type { AppBindings, UserRecord, AgentRecord } from '../types';
 
 const auth = new Hono<AppBindings>();
-
-// Only allow same-origin relative redirect targets (a single leading slash,
-// not "//host" or an absolute URL). Prevents /auth/google?redirect=https://evil
-// from bouncing an authenticated user off-site.
-function safeRedirect(target: string | undefined | null): string {
-  if (!target || typeof target !== 'string') return '/';
-  if (!target.startsWith('/') || target.startsWith('//') || target.startsWith('/\\')) return '/';
-  return target;
-}
 
 // GET /auth/google — 跳转 Google OAuth
 auth.get('/auth/google', async (c) => {

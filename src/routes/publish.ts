@@ -4,17 +4,10 @@ import { generateSlug } from '../utils/id';
 import { injectWatermark } from '../utils/watermark';
 import { authMiddleware } from '../auth/verify';
 import { toPageMetaLite } from '../utils/kv';
+import { isValidSlug, isReservedSlug, clampTtl } from '../utils/validate';
 import type { AppBindings } from '../types';
 
 const publish = new Hono<AppBindings>();
-
-// Slugs that would collide with top-level routes if used as /p/... is fine,
-// but custom slugs also become public identifiers — keep the obvious ones off-limits.
-const RESERVED_SLUGS = new Set([
-  'admin', 'account', 'auth', 'claim', 'api', 'v1', 'blog', 'templates',
-  'showcase', 'changelog', 'pricing', 'docs', 'health', 'p', 'sitemap',
-  'robots', 'favicon', 'llms', 'og', 'shippage', 'www',
-]);
 
 publish.post('/v1/publish', authMiddleware(false), async (c) => {
   const body = await c.req.json();
@@ -32,10 +25,10 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
   // 校验自定义 slug：只允许小写字母、数字、连字符，避免污染 R2 key /
   // 与保留路由冲突（如 slug="../x" 会写到 pages/../x.html）
   if (customSlug !== undefined) {
-    if (typeof customSlug !== 'string' || !/^[a-z0-9-]{1,64}$/.test(customSlug)) {
+    if (!isValidSlug(customSlug)) {
       return c.json({ ok: false, error: 'Invalid slug: use 1–64 lowercase letters, numbers, or hyphens' }, 400);
     }
-    if (RESERVED_SLUGS.has(customSlug)) {
+    if (isReservedSlug(customSlug)) {
       return c.json({ ok: false, error: 'That slug is reserved' }, 409);
     }
   }
@@ -91,14 +84,9 @@ publish.post('/v1/publish', authMiddleware(false), async (c) => {
   }
 
   // 计算过期时间：免费版最长 14 天，最短 60 秒，防止 expires_in 被滥用做永久页
-  const MAX_TTL = 14 * 24 * 60 * 60;
-  let ttl = MAX_TTL;
-  if (expires_in !== undefined) {
-    const n = Number(expires_in);
-    if (!Number.isFinite(n) || n <= 0) {
-      return c.json({ ok: false, error: 'expires_in must be a positive number of seconds' }, 400);
-    }
-    ttl = Math.min(Math.max(Math.floor(n), 60), MAX_TTL);
+  const ttl = clampTtl(expires_in);
+  if (ttl === null) {
+    return c.json({ ok: false, error: 'expires_in must be a positive number of seconds' }, 400);
   }
   const expires_at = new Date(Date.now() + ttl * 1000).toISOString();
 
