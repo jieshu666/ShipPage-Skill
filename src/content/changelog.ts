@@ -8,6 +8,42 @@ export interface ChangelogEntry {
 // Most-recent-first. New entries are prepended by .github/workflows/changelog-on-release.yml.
 export const changelog: ChangelogEntry[] = [
   {
+    version: "1.2.1",
+    date: "2026-07-06",
+    summary: "8 added, 10 changed, 5 fixed",
+    sections: {
+      added: [
+        "site completion — legal/trust pages, comparisons, fresh post, AI-crawler rules",
+        "P1 positioning + docs system + pricing page",
+        "GEO-first growth infrastructure — blog, templates, showcase, changelog, SEO",
+        "Google OAuth scaffolding + update GitHub repo link",
+        "v1.2.0 — skill auto-update mechanism + README refresh",
+        "v1.1.0 — add Markdown publishing support",
+        "optimize SKILL.md, add marketing content, install shippage skill",
+        "bilingual landing page, waitlist, Feishu sync, SEO/GEO README",
+      ],
+      changed: [
+        "add MCP registry publish workflow (GitHub OIDC, dispatch-only)",
+        "**deploy:** read CF token from the secret name it was stored under",
+        "**deploy:** skip (not fail) the deploy step until CLOUDFLARE_API_TOKEN is set",
+        "consolidate duplicated SHA-256 password hashing into one helper",
+        "add unit suite + extract testable validators; wire into CI",
+        "add Cloudflare deploy workflow (push to main + manual dispatch)",
+        "**mcp:** add official MCP registry server.json + mcpName link",
+        "**marketing:** add LAUNCH-STACKING playbook with final copy for 9 channels",
+        "add official website link and update to v1.1.1",
+        "add GitHub Actions workflow for npm auto-publish via OIDC",
+      ],
+      fixed: [
+        "make watermark injection idempotent to protect the noindex guarantee",
+        "P0 reliability, SEO, and security hardening pass",
+        "bump to v1.1.1 to republish with README",
+        "copy root README into package before npm publish",
+        "use NPM_TOKEN secret instead of OIDC for npm publish",
+      ],
+    },
+  },
+  {
     version: '1.3.0',
     date: '2026-07-03',
     summary: 'Reliability, SEO, and security hardening pass.',
