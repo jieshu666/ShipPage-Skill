@@ -1,0 +1,32 @@
+name: Publish to MCP Registry
+
+# Publishes shippage-mcp to the official Model Context Protocol registry
+# (registry.modelcontextprotocol.io) using GitHub OIDC — no stored credentials.
+# The io.github.jieshu666/* namespace is authorized automatically because this
+# repo is owned by jieshu666.
+#
+# PREREQUISITE: the npm package at shippage-mcp/server.json's version must already
+# be published to npm (the registry validates the npm package exists and carries
+# a matching mcpName). Run this AFTER "Publish to npm" succeeds — dispatch only.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" \
+            | tar xz mcp-publisher
+          chmod +x mcp-publisher
+      - name: Login via GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+      - name: Publish server.json
+        working-directory: shippage-mcp
+        run: ../mcp-publisher publish
