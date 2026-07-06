@@ -17,7 +17,9 @@ jobs:
     name: wrangler deploy
     runs-on: ubuntu-latest
     env:
-      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      # Prefer the canonical name; fall back to the token stored under its raw
+      # name if the secret was added that way.
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CFUT_WLEKIQWF5NV7NQEGJIMP9YDD2GUQD6C7OQX8K8MQA4A87F66 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,4 +35,4 @@ jobs:
         if: env.CF_TOKEN != ''
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ env.CF_TOKEN }}
