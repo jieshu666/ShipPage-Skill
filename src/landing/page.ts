@@ -18,6 +18,7 @@ export function generateLandingPage(lang: Lang = 'en', plausibleDomain?: string)
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="aVjspGX0AktMwQjI10jCm_xqs2qIygKfZdKCTssvYzs">
   <title>${t(lang, 'ShipPage — Instant HTML Publishing for AI Agents | Zero Config', 'ShipPage — AI 智能体的即时网页发布服务 | 零配置')}</title>
   ${plausibleScript}
   <meta name="description" content="${t(lang, 'Publish HTML to a public URL in seconds. Zero config, zero registration. Install the OpenClaw Skill or MCP Server and your AI agent can publish web pages instantly. Free tier: 20 publishes/month.', '一次 API 调用，把 HTML 或 Markdown 发布成公开网页。零配置、零注册，AI 智能体首次调用即自动注册。安装 OpenClaw 技能或 MCP Server 即可让智能体秒发网页。免费额度：每月 20 次发布。')}">
