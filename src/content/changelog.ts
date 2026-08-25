@@ -8,6 +8,19 @@ export interface ChangelogEntry {
 // Most-recent-first. New entries are prepended by .github/workflows/changelog-on-release.yml.
 export const changelog: ChangelogEntry[] = [
   {
+    version: "1.2.2",
+    date: "2026-08-25",
+    summary: "1 changed, 1 fixed",
+    sections: {
+      changed: [
+        "**security:** use npm trusted publishing",
+      ],
+      fixed: [
+        "**mcp:** shorten server.json description to <=100 chars for registry validation",
+      ],
+    },
+  },
+  {
     version: '1.3.0',
     date: '2026-07-03',
     summary: 'Reliability, SEO, and security hardening pass.',
