@@ -3,7 +3,7 @@
   "name": "io.github.jieshu666/shippage",
   "title": "ShipPage",
   "description": "Publish HTML or Markdown to a public URL in one call. Zero config, auto-registers on first use.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "websiteUrl": "https://shippage.ai",
   "repository": {
     "url": "https://github.com/jieshu666/ShipPage-Skill",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "shippage-mcp",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "transport": {
         "type": "stdio"
       }

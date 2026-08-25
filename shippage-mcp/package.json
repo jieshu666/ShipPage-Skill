@@ -1,6 +1,6 @@
 {
   "name": "shippage-mcp",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "mcpName": "io.github.jieshu666/shippage",
   "description": "MCP server for ShipPage — publish HTML or Markdown to a public URL in one call. Zero config, auto-registers on first use. Works with Claude Desktop, Claude Code, Cursor, and any MCP client.",
   "type": "module",
@@ -38,7 +38,7 @@
   "author": "ShipPage (https://shippage.ai)",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "marked": "^15.0.0"
   },
   "devDependencies": {
